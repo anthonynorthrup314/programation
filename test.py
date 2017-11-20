@@ -1,34 +1,46 @@
-import aggdraw, PIL, Tkinter
+import aggdraw
+import Tkinter as tk
 from PIL import Image, ImageTk
 
-# Setup screen size
-WIDTH,HEIGHT = 640,320
+from stage import Stage
 
-# Setup Tk
-root = Tkinter.Tk()
-root.geometry('{}x{}'.format(WIDTH, HEIGHT))
-root.resizable(0, 0)
+def main():
+	# Setup screen size
+	WIDTH,HEIGHT = 640,320
 
-# Create canvas
-canvas = Tkinter.Canvas(root, width=WIDTH, height=HEIGHT)
-canvas.pack()
+	# Test the stage object
+	stage = Stage()
+	stage.show()
+	return
 
-# Create image
-img = PIL.Image.new("RGB", (WIDTH, HEIGHT), "black")
+	# Setup Tk
+	root = tk.Tk()
+	root.geometry('{}x{}'.format(WIDTH, HEIGHT))
+	root.resizable(0, 0)
 
-# Draw on the image
-d = aggdraw.Draw(img)
-p = aggdraw.Pen("white", 1)
-d.line((0, 0, WIDTH, HEIGHT), p)
-d.line((0, HEIGHT, WIDTH, 0), p)
-d.arc((0, 0, WIDTH, HEIGHT), 45, 135, p)
-d.flush()
+	# Create canvas
+	canvas = tk.Canvas(root, width=WIDTH, height=HEIGHT)
+	canvas.pack()
 
-# Convert to Tk image
-imgP = PIL.ImageTk.PhotoImage(img)
+	# Create image
+	img = Image.new("RGB", (WIDTH, HEIGHT), "black")
 
-# Add image to canvas
-imgC = canvas.create_image(WIDTH / 2, HEIGHT / 2, image=imgP)
+	# Draw on the image
+	d = aggdraw.Draw(img)
+	p = aggdraw.Pen("white", 1)
+	d.line((0, 0, WIDTH, HEIGHT), p)
+	d.line((0, HEIGHT, WIDTH, 0), p)
+	d.arc((0, 0, WIDTH, HEIGHT), 45, 135, p)
+	d.flush()
 
-# Display the window
-root.mainloop()
+	# Convert to Tk image
+	imgP = ImageTk.PhotoImage(img)
+
+	# Add image to canvas
+	imgC = canvas.create_image(WIDTH / 2, HEIGHT / 2, image=imgP)
+
+	# Display the window
+	root.mainloop()
+
+if __name__ == "__main__":
+	main()
