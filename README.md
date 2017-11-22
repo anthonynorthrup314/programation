@@ -1,5 +1,5 @@
-# progromation
-progromation stands for "Programmatic Animation" (unfortunately I'm bad at spelling)
+# programation
+programation stands for "**Progra**mmatic Ani**mation**", basically drawing with a computer, but that sounded fancier
 
 ## Current State:
 
