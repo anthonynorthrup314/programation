@@ -1,6 +1,14 @@
+import math
 import numpy as np
 from PIL import Image
 import Tkinter as tk
+
+# Some helpers copied from 3B1B's Manim project
+# https://github.com/3b1b/manim
+
+# Window dimensions
+DEF_WIDTH = 640
+DEF_HEIGHT = 480
 
 def combine_configs(configs):
 	"""
@@ -37,11 +45,18 @@ def handle_config(self, kwargs, extras = {}):
 	all_configs += configs
 	self.__dict__ = combine_configs(all_configs)
 
-def combine_unique(list1, list2):
+def is_number(val):
 	"""
-	Concats two lists that contain unique elements
+	Check if a value is a number
 	"""
-	return list1 + [el for el in list2 if el not in list1]
+	try:
+		return not math.isnan(float(val))
+	except:
+		return False
+	return True
+
+def rotation_matrix(angle):
+	return np.matrix([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]])
 
 def image_from_array(data):
 	"""
