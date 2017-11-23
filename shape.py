@@ -25,10 +25,17 @@ class Shape(object):
 	def __init__(self, **kwargs):
 		handle_config(self, kwargs)
 		self.update_transform()
-		#TODO Handle alternative color inputs (eg. name and hex)
+		self.handle_colors()
 	
 	def copy(self):
 		return deepcopy(self)
+	
+	def handle_colors(self):
+		"""
+		Convert various color inputs to Color objects
+		"""
+		self.stroke_color = to_color(self.stroke_color)
+		self.fill_color = to_color(self.fill_color)
 	
 	def get_pen(self):
 		"""
@@ -80,7 +87,26 @@ class Shape(object):
 		Draw the shape to the canvas
 		"""
 		# Implemented in child classes
-		#TODO Remove sample drawing code
+		pass
+	
+	def draw(self, canvas):
+		"""
+		Perform drawing events
+		"""
+		self.pre_draw(canvas)
+		self.draw_self(canvas, self.pen, self.brush)
+		self.post_draw(canvas)
+
+class TestShape(Shape):
+	"""
+	Just has an example drawing
+	"""
+	def __init__(self, **kwargs):
+		super(TestShape, self).__init__(**kwargs)
+	def draw_self(self, canvas, pen, brush):
+		"""
+		Draw the shape to the canvas
+		"""
 		w = DEF_WIDTH
 		h = DEF_HEIGHT
 		d = canvas.drawing
@@ -91,11 +117,3 @@ class Shape(object):
 		d.pieslice((0, 0, w, h), 225, 315, pen, brush)
 		s = aggdraw.Symbol("M {} {} C {} {}, {} {}, {} {} Z".format(w/2,h/2,2*w/3,h/3,5*w/6,2*h/3,w,h/2))
 		d.symbol((0, 0, w, h), s, pen, brush)
-	
-	def draw(self, canvas):
-		"""
-		Perform drawing events
-		"""
-		self.pre_draw(canvas)
-		self.draw_self(canvas, self.pen, self.brush)
-		self.post_draw(canvas)
