@@ -56,6 +56,15 @@ def handle_config(self, kwargs, local_args = {}):
 	all_configs += configs
 	self.__dict__ = combine_configs(all_configs)
 
+def change_kwargs(kwargs={}, **changes):
+	"""
+	Modify an existing kwargs object
+	"""
+	result = kwargs.copy()
+	for key,value in changes.items():
+		result[key] = value
+	return result
+
 def is_number(val):
 	"""
 	Check if a value is a number
