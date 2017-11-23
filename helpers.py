@@ -11,6 +11,16 @@ import Tkinter as tk
 DEF_WIDTH = 640
 DEF_HEIGHT = 480
 
+def filter_locals(local_args):
+	"""
+	Remove the usual local variables
+	"""
+	excluded = ["self", "kwargs"]
+	result = local_args.copy()
+	for key in excluded:
+		result.pop(key, local_args)
+	return result
+
 def combine_configs(configs):
 	"""
 	Combine configurations, first appearence takes priority
@@ -29,7 +39,7 @@ def combine_configs(configs):
 				config[key] = combine_configs(config[key], value)
 	return config
 
-def handle_config(self, kwargs, extras = {}):
+def handle_config(self, kwargs, local_args = {}):
 	"""
 	Sets up object variables based on configs
 	"""
@@ -42,7 +52,7 @@ def handle_config(self, kwargs, extras = {}):
 		if hasattr(superclass, "CONFIG"):
 			configs.append(superclass.CONFIG)
 	# Create priority order of configs
-	all_configs = [kwargs, extras, self.__dict__]
+	all_configs = [kwargs, filter_locals(local_args), self.__dict__]
 	all_configs += configs
 	self.__dict__ = combine_configs(all_configs)
 
@@ -56,7 +66,17 @@ def is_number(val):
 		return False
 	return True
 
+def degtorad(angle):
+	"""
+	Convert degrees to radians
+	"""
+	return angle * math.pi / 180.
+
 def rotation_matrix(angle):
+	"""
+	Compute the usual rotation matrix
+	"""
+	angle = degtorad(angle)
 	return np.matrix([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]])
 
 def image_from_array(data):
@@ -93,3 +113,12 @@ def to_color(col):
 		if len(e.args) > 0:
 			raise e
 		raise ValueError("Invalid color format: {}".format(col))
+
+def verify_bounds(bounds):
+	"""
+	Ensure the bounds are in a usable form
+	"""
+	assert isinstance(bounds, tuple), "Bounds must be in the form of a tuple"
+	assert len(bounds) == 4, "Must provide four coordinates"
+	for v in bounds:
+		assert is_number(v), "Bounds must be a tuple of numbers"

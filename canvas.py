@@ -15,8 +15,10 @@ class Canvas(object):
 		"height": 480
 	}
 	def __init__(self, width, height, **kwargs):
-		extras = dict(width = width, height = height)
-		handle_config(self, kwargs, extras = extras);
+		for v in [width, height]:
+			assert isinstance(v, int), "Dimensions must be integers"
+			assert v > 0, "Dimensions must be larger than 0"
+		handle_config(self, kwargs, locals());
 		self.data = np.zeros((self.height, self.width, 3))
 	
 	def copy(self):

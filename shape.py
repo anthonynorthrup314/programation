@@ -20,15 +20,64 @@ class Shape(object):
 		# Transform
 		"transform": Transform.IDENTITY(),
 		"parent_transform": None,
-		"global_transform": None
+		"global_transform": None,
+		# Children
+		"children": []
 	}
 	def __init__(self, **kwargs):
 		handle_config(self, kwargs)
+		self.validate_children()
 		self.update_transform()
 		self.handle_colors()
 	
 	def copy(self):
 		return deepcopy(self)
+	
+	def has_loop(self, child):
+		"""
+		Make sure there isn't a reference loop
+		"""
+		if child == self:
+			return True
+		for subchild in child.children:
+			if self.has_loop(subchild):
+				return True
+		return False
+	
+	def validate_child(self, child):
+		"""
+		Make sure the child is valid
+		"""
+		if not isinstance(child, Shape):
+			raise ValueError("Children must be Shapes")
+		if self.has_loop(child):
+			raise ValueError("Shape trees can not contain loops")
+	
+	def validate_children(self):
+		"""
+		Make sure the children are valid
+		"""
+		for child in self.children:
+			self.validate_child(child)
+		# Remove duplicates
+		self.children = reduce(lambda r,e: (r + [e]) if e not in r else r, self.children, [])
+	
+	def add(self, *children):
+		"""
+		Add new child shapes
+		"""
+		for child in children:
+			self.validate_child(child)
+			if child not in self.children:
+				self.children.append(child)
+	
+	def remove(self, *children):
+		"""
+		Remove a child shape
+		"""
+		for child in children:
+			if child in self.children:
+				self.children.remove(child)
 	
 	def handle_colors(self):
 		"""
@@ -62,10 +111,15 @@ class Shape(object):
 		if parent_transform == False:
 			parent_transform = self.parent_transform
 		self.parent_transform = parent_transform
-		self.global_transform = self.transform.copy()
-		if self.parent_transform:
-			self.global_transform.merge(self.parent_transform)
-		#TODO Can update sub-objects here
+		if self.transform:
+			self.global_transform = self.transform.copy()
+			if self.parent_transform:
+				self.global_transform.merge(self.parent_transform)
+		else:
+			self.global_transform = self.parent_transform
+		# Update children
+		for child in self.children:
+			child.update_transform(self.global_transform)
 	
 	def pre_draw(self, canvas):
 		"""
@@ -96,24 +150,5 @@ class Shape(object):
 		self.pre_draw(canvas)
 		self.draw_self(canvas, self.pen, self.brush)
 		self.post_draw(canvas)
-
-class TestShape(Shape):
-	"""
-	Just has an example drawing
-	"""
-	def __init__(self, **kwargs):
-		super(TestShape, self).__init__(**kwargs)
-	def draw_self(self, canvas, pen, brush):
-		"""
-		Draw the shape to the canvas
-		"""
-		w = DEF_WIDTH
-		h = DEF_HEIGHT
-		d = canvas.drawing
-		d.line((0, 0, w, h), pen)
-		d.line((0, h, w, 0), pen)
-		d.arc((0, 0, w, h), 45, 135, pen)
-		d.chord((0, 0, w, h), 135, 225, pen, brush)
-		d.pieslice((0, 0, w, h), 225, 315, pen, brush)
-		s = aggdraw.Symbol("M {} {} C {} {}, {} {}, {} {} Z".format(w/2,h/2,2*w/3,h/3,5*w/6,2*h/3,w,h/2))
-		d.symbol((0, 0, w, h), s, pen, brush)
+		for child in self.children:
+			child.draw(canvas)
