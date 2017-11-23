@@ -41,47 +41,32 @@ class Canvas(object):
 		else:
 			self.data = np.zeros((self.height, self.width, 3))
 		# Setup the image
-		img = image_from_array(self.data)
-		self.drawing = aggdraw.Draw(img)
-		hasTransform = False
+		self.img = image_from_array(self.data)
+		self.drawing = aggdraw.Draw(self.img)
+		self.hasTransform = False
 		# Draw each shape
 		for shape in shapes:
-			# Handle previous transform
-			if hasTransform:
-				if not shape.transform:
-					self.drawing.settransform()
-					hasTransform = False
-			# Use shape transform
-			if shape.transform:
-				self.drawing.settransform(shape.transform.to_array())
-				hasTransform = True
-			# Setup the pen and brush
-			pen = self.get_shape_pen(shape)
-			brush = self.get_shape_brush(shape)
-			# Draw the shape
-			shape.draw(self, pen, brush)
+			shape.draw(self)
 		# Cleanup
 		self.drawing.flush()
+		del self.hasTransform
 		del self.drawing
-		self.data = np.array(img)
+		self.data = np.array(self.img)
+		del self.img
 	
-	def get_shape_pen(self, shape):
+	def set_transform(self, transform=None):
 		"""
-		Create a pen as defined by the shape
+		Setup the aggdraw transformation
 		"""
-		# No stroke?
-		if not shape.stroke_color or shape.stroke_width <= 0. or shape.stroke_alpha <= 0.:
-			return None
-		return aggdraw.Pen(shape.stroke_color.hex_l, width = shape.stroke_width, opacity = int(255 * shape.stroke_alpha))
-	
-	def get_shape_brush(self, shape):
-		"""
-		Create a brush as defined by the shape
-		"""
-		# No fill?
-		if not shape.fill_color or shape.fill_alpha <= 0.:
-			return None
-		return aggdraw.Brush(shape.fill_color.hex_l, opacity = int(255 * shape.fill_alpha))
+		# Handle previous transform
+		if self.hasTransform:
+			if not transform:
+				self.drawing.settransform()
+				self.hasTransform = False
+		# Use transform
+		if transform:
+			self.drawing.settransform(transform.to_array())
+			self.hasTransform = True
 	
 	def show(self):
 		"""

@@ -12,7 +12,7 @@ def main():
 	# Tests
 	c = Canvas(w, h)
 	t = Transform.IDENTITY().shift(w / 8, h / 8).rotate_about(w / 2, h / 2, math.pi)
-	s = Shape(stroke_color = Color("red"), stroke_width = 2., fill_color = Color("green"), transform = t)
+	s = Shape(stroke_color = Color("red"), stroke_width = 2., fill_color = Color("green"), transform = t, parent_transform = Transform.RESIZE_ABOUT(w / 2, h / 2, 1., .5))
 	c.draw(s)
 	c.show()
 

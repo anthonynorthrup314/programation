@@ -54,10 +54,16 @@ class Transform(object):
 	
 	def combine(self, other):
 		"""
-		Combine two transformations
+		Combine two transformations (self on left)
 		"""
-		# Use matrix multiplication
 		self.matrix = np.matmul(self.matrix, other.matrix)
+		return self
+	
+	def merge(self, other):
+		"""
+		Combine two transformation (self on right)
+		"""
+		self.matrix = np.matmul(other.matrix, self.matrix)
 		return self
 	
 	@staticmethod
@@ -104,8 +110,7 @@ class Transform(object):
 		"""
 		Changes the transform
 		"""
-		self.matrix = Transform.SKEW_ABOUT(xcenter, ycenter, a, b, c, d).combine(self).matrix
-		return self
+		return self.merge(Transform.SKEW_ABOUT(xcenter, ycenter, a, b, c, d))
 	
 	@staticmethod
 	def SKEW(a, b, c, d):
@@ -125,41 +130,71 @@ class Transform(object):
 		"""
 		Changes the transform
 		"""
-		self.matrix = Transform.SKEW(a, b, c, d).combine(self).matrix
-		return self
+		return self.merge(Transform.SKEW(a, b, c, d))
 	
 	@staticmethod
-	def RESIZE_ABOUT(xcenter, ycenter, scalar):
+	def RESIZE_ABOUT(xcenter, ycenter, xscalar, yscalar):
 		"""
 		Creates a Resize transformation
 		"""
-		return Transform.SKEW_ABOUT(xcenter, ycenter, scalar, 0, 0, scalar)
+		return Transform.SKEW_ABOUT(xcenter, ycenter, xscalar, 0, 0, yscalar)
 	
-	def resize_about(self, xcenter, ycenter, scalar):
+	def resize_about(self, xcenter, ycenter, xscalar, yscalar):
 		"""
 		Changes the transform
 		"""
-		self.matrix = Transform.RESIZE_ABOUT(xcenter, ycenter, scalar).combine(self).matrix
-		return self
+		return self.merge(Transform.RESIZE_ABOUT(xcenter, ycenter, xscalar, yscalar))
 	
 	@staticmethod
-	def RESIZE(scalar):
+	def RESIZE(xscalar, yscalar):
 		"""
 		Creates a basic Resize transformation
 		"""
-		return Transform.RESIZE_ABOUT(0, 0, scalar)
+		return Transform.RESIZE_ABOUT(0, 0, xscalar, yscalar)
 	
-	def set_resize(self, scalar):
+	def set_resize(self, xscalar, yscalar):
 		"""
 		Sets the skew
 		"""
-		return self.set_skew(scalar, 0, 0, scalar)
+		return self.set_skew(sxcalar, 0, 0, yscalar)
 	
-	def resize(self, scalar):
+	def resize(self, xscalar, yscalar):
 		"""
 		Changes the transform
 		"""
-		return self.skew(scalar, 0, 0, scalar)
+		return self.skew(xscalar, 0, 0, yscalar)
+	
+	@staticmethod
+	def SCALE_ABOUT(xcenter, ycenter, scalar):
+		"""
+		Creates a Scale transformation
+		"""
+		return Transform.RESIZE_ABOUT(xcenter, ycenter, scalar, scalar)
+	
+	def scale_about(self, xcenter, ycenter, scalar):
+		"""
+		Changes the transform
+		"""
+		return self.merge(Transform.SCALE_ABOUT(xcenter, ycenter, scalar))
+	
+	@staticmethod
+	def SCALE(scalar):
+		"""
+		Creates a basic Scale transformation
+		"""
+		return Transform.SCALE_ABOUT(0, 0, scalar)
+	
+	def set_scale(self, scalar):
+		"""
+		Sets the skew
+		"""
+		return self.set_resize(scalar, scalar)
+	
+	def scale(self, scalar):
+		"""
+		Changes the transform
+		"""
+		return self.resize(scalar, scalar)
 	
 	@staticmethod
 	def ROTATE_ABOUT(xcenter, ycenter, angle):
@@ -172,8 +207,7 @@ class Transform(object):
 		"""
 		Changes the transform
 		"""
-		self.matrix = Transform.ROTATE_ABOUT(xcenter, ycenter, angle).combine(self).matrix
-		return self
+		return self.merge(Transform.ROTATE_ABOUT(xcenter, ycenter, angle))
 	
 	@staticmethod
 	def ROTATE(angle):
@@ -192,5 +226,4 @@ class Transform(object):
 		"""
 		Changes the transform
 		"""
-		self.matrix = Transform.ROTATE(angle).combine(self).matrix
-		return self
+		return self.merge(Transform.ROTATE(angle))
