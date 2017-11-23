@@ -1,5 +1,6 @@
 import aggdraw
 from colour import Color
+from copy import deepcopy
 
 from helpers import *
 from transform import *
@@ -23,6 +24,9 @@ class Shape(object):
 		handle_config(self, kwargs)
 		#TODO Handle other color inputs (eg. name and hex)
 	
+	def copy(self):
+		return deepcopy(self)
+	
 	def draw(self, canvas, pen=None, brush=None):
 		"""
 		Draw the shape to the canvas
@@ -37,5 +41,5 @@ class Shape(object):
 		d.arc((0, 0, w, h), 45, 135, pen)
 		d.chord((0, 0, w, h), 135, 225, pen, brush)
 		d.pieslice((0, 0, w, h), 225, 315, pen, brush)
-		s = aggdraw.Symbol("M {} {} C {} {}, {} {}, {} {} Z".format(w/2,h/2,2*w/3,h/3,5*w/6,h/3,w,h/2))
+		s = aggdraw.Symbol("M {} {} C {} {}, {} {}, {} {} Z".format(w/2,h/2,2*w/3,h/3,5*w/6,2*h/3,w,h/2))
 		d.symbol((0, 0, w, h), s, pen, brush)

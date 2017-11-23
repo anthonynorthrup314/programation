@@ -11,7 +11,7 @@ def main():
 	
 	# Tests
 	c = Canvas(w, h)
-	t = Transform.ROTATE_ABOUT(w / 2, h / 2, math.pi)
+	t = Transform.IDENTITY().shift(w / 8, h / 8).rotate_about(w / 2, h / 2, math.pi)
 	s = Shape(stroke_color = Color("red"), stroke_width = 2., fill_color = Color("green"), transform = t)
 	c.draw(s)
 	c.show()

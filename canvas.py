@@ -1,4 +1,5 @@
 import aggdraw
+from copy import deepcopy
 from PIL import Image, ImageTk
 import Tkinter as tk
 
@@ -17,6 +18,9 @@ class Canvas(object):
 		extras = dict(width = width, height = height)
 		handle_config(self, kwargs, extras = extras);
 		self.data = np.zeros((self.height, self.width, 3))
+	
+	def copy(self):
+		return deepcopy(self)
 	
 	def draw(self, *shapes, **kwargs):
 		"""
