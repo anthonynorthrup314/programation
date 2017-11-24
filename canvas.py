@@ -11,8 +11,8 @@ class Canvas(object):
 	Handles the drawing of Shapes
 	"""
 	CONFIG = {
-		"width": 640,
-		"height": 480
+		"width": DEF_WIDTH,
+		"height": DEF_HEIGHT,
 	}
 	def __init__(self, width, height, **kwargs):
 		for v in [width, height]:
