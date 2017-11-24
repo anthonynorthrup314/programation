@@ -68,14 +68,14 @@ class Symbol(BoundedShape):
 		handle_config(self, kwargs, locals())
 		BoundedShape.__init__(self, bounds, **kwargs)
 	
+	def draw_self(self, canvas, pen, brush):
+		canvas.drawing.symbol(self.bounds, self.symbol, pen, brush)
+	
 	def update(self):
 		"""
 		Update the internal aggdraw symbol object
 		"""
 		self.symbol = aggdraw.Symbol(self.path)
-	
-	def draw_self(self, canvas, pen, brush):
-		canvas.drawing.symbol(self.bounds, self.symbol, pen, brush)
 
 class SliceShape(BoundedShape):
 	"""

@@ -10,25 +10,29 @@ class Shape(object):
 	Defines default values for other shapes
 	"""
 	CONFIG = {
-		# Stroke
+		"name": None,
+		"children": [],
 		"stroke_color": Color("white"),
 		"stroke_width": 1.,
 		"stroke_alpha": 1.,
-		# Fill
 		"fill_color": None,
 		"fill_alpha": 1.,
-		# Transform
 		"transform": Transform.IDENTITY(),
 		"parent_transform": None,
 		"global_transform": None,
-		# Children
-		"children": []
 	}
 	def __init__(self, **kwargs):
 		handle_config(self, kwargs)
+		if not self.name:
+			self.name = self.__class__.__name__
 		self.validate_children()
 		self.update_transform()
 		self.handle_colors()
+	
+	def __str__(self):
+		return str(self.name)
+	def __repr__(self):
+		return self.__str__()
 	
 	def copy(self):
 		return deepcopy(self)
@@ -78,6 +82,15 @@ class Shape(object):
 		for child in children:
 			if child in self.children:
 				self.children.remove(child)
+	
+	def flatten(self):
+		"""
+		Return the entire shape tree as a single array
+		"""
+		result = [self]
+		for child in self.children:
+			result += child.flatten()
+		return result
 	
 	def handle_colors(self):
 		"""
