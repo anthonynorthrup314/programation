@@ -80,7 +80,7 @@ class Shape(object):
 		Remove a child shape
 		"""
 		for child in children:
-			if child in self.children:
+			if isinstance(child, Shape) and child in self.children:
 				self.children.remove(child)
 	
 	def flatten(self):
