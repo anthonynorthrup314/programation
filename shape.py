@@ -74,6 +74,7 @@ class Shape(object):
 			self.validate_child(child)
 			if child not in self.children:
 				self.children.append(child)
+		self.update_transform()
 	
 	def remove(self, *children):
 		"""

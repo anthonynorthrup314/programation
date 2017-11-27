@@ -24,6 +24,12 @@ class Canvas(object):
 	def copy(self):
 		return deepcopy(self)
 	
+	def bounds(self):
+		"""
+		Get the canvas bounds as a tuple
+		"""
+		return (0, 0, self.width, self.height)
+	
 	def draw(self, *shapes, **kwargs):
 		"""
 		Draw the shapes to memory

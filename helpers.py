@@ -7,7 +7,7 @@ import Tkinter as tk
 # Some helpers copied from 3B1B's Manim project
 # https://github.com/3b1b/manim
 
-# Window dimensions
+# Constants
 DEF_WIDTH = 640
 DEF_HEIGHT = 480
 
@@ -99,6 +99,8 @@ def to_color(col):
 	Convert different color representations to a Color object
 	"""
 	try:
+		if col == None:
+			return col
 		if isinstance(col, Color):
 			return col
 		if isinstance(col, str):
@@ -131,3 +133,39 @@ def verify_bounds(bounds):
 	assert len(bounds) == 4, "Must provide four coordinates"
 	for v in bounds:
 		assert is_number(v), "Bounds must be a tuple of numbers"
+
+def bounds_from_points(*points):
+	"""
+	Create a bounds tuple enclosing the points
+	"""
+	if len(points) == 0:
+		return (0, 0, 0, 0)
+	p0 = points[0]
+	xmin, ymin, xmax, ymax = p0[0], p0[1], p0[0], p0[1]
+	for p in points:
+		xmin = min(xmin, p[0])
+		ymin = min(ymin, p[1])
+		xmax = max(xmax, p[0])
+		ymax = max(ymax, p[1])
+	return (xmin, ymin, xmax, ymax)
+
+def assert_point(p):
+	"""
+	Assertions for a valid point
+	"""
+	assert isinstance(p, tuple), "Must provide points as tuples"
+	assert len(p) == 2, "Must provide pairs of points"
+	for v in p:
+		assert is_number(v), "Must provide coordinates as numbers"
+
+def slice_curve(t, p0, p1, p2, p3):
+	"""
+	Cut a cubic bezier curve at a particular percentage
+	"""
+	M = np.matrix([[1., 0., 0., 0.], [-3., 3., 0., 0.], [3., -6., 3., 0.], [-1., 3., -3., 1.]])
+	c = 1. * t
+	C = np.matrix([[1., 0., 0., 0.], [0., c, 0., 0.], [0., 0., c**2, 0.], [0., 0., 0., c**3]])
+	Q = M.getI() * C * M
+	resultX = Q * np.matrix([p0[0], p1[0], p2[0], p3[0]]).getT()
+	resultY = Q * np.matrix([p0[1], p1[1], p2[1], p3[1]]).getT()
+	return zip(resultX.getA1(), resultY.getA1())

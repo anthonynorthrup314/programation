@@ -49,21 +49,21 @@ class Transform(object):
 		"""
 		Apply the matrix to a point
 		"""
-		point = np.matmul(self.matrix, np.matrix([x, y, 1]).getT())
+		point = self.matrix * np.matrix([x, y, 1]).getT()
 		return point[0], point[1]
 	
 	def combine(self, other):
 		"""
 		Combine two transformations (self on left)
 		"""
-		self.matrix = np.matmul(self.matrix, other.matrix)
+		self.matrix *= other.matrix
 		return self
 	
 	def merge(self, other):
 		"""
 		Combine two transformation (self on right)
 		"""
-		self.matrix = np.matmul(other.matrix, self.matrix)
+		self.matrix = other.matrix * self.matrix
 		return self
 	
 	@staticmethod

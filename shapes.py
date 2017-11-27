@@ -32,15 +32,78 @@ class TestShapeChildren(Shape):
 		w,h = DEF_WIDTH, DEF_HEIGHT
 		bounds = (0, 0, w, h)
 		self.add(
-			Line((0, 0, w, h), **ckwargs),
-			Line((0, h, w, 0), **ckwargs),
+			Line((0, 0), (w, h), **ckwargs),
+			Line((0, h), (w, 0), **ckwargs),
 			Arc(bounds, 45, 135, **ckwargs),
 			Chord(bounds, 135, 225, **ckwargs),
 			PieSlice(bounds, 225, 315, **ckwargs),
-			Symbol(bounds, "M {} {} C {} {}, {} {}, {} {} Z".format(w/2,h/2,2*w/3,h/3,5*w/6,2*h/3,w,h/2), **ckwargs)
+			Symbol("M {} {} C {} {}, {} {}, {} {} Z".format(w/2,h/2,2*w/3,h/3,5*w/6,2*h/3,w,h/2), **ckwargs)
 		)
-		# Apply transform to children
-		self.update_transform()
+
+class Symbol(Shape):
+	"""
+	SVG path object
+	"""
+	def __init__(self, path, **kwargs):
+		assert isinstance(path, str), "Path must be a string"
+		symbol = aggdraw.Symbol(path)
+		handle_config(self, kwargs, locals())
+		Shape.__init__(self, **kwargs)
+	
+	def draw_self(self, canvas, pen, brush):
+		canvas.drawing.symbol(canvas.bounds(), self.symbol, pen, brush)
+	
+	def update_symbol(self):
+		"""
+		Update the internal aggdraw symbol object
+		"""
+		self.symbol = aggdraw.Symbol(self.path)
+
+class BezierCurve(Symbol):
+	"""
+	A cubic bezier curve
+	"""
+	CONFIG = {
+		"slice_pos": 1.,
+		"close_path": False
+	}
+	def __init__(self, p0, p1, p2, p3, **kwargs):
+		for p in [p0, p1, p2, p3]:
+			assert isinstance(p, tuple), "Must provide points as tuples"
+			assert len(p) == 2, "Must provide pairs of points"
+			for v in p:
+				assert is_number(v), "Must provide coordinates as numbers"
+		handle_config(self, kwargs, dict(anchors = [p0, p1, p2, p3]))
+		self.slice(self.slice_pos)
+		Symbol.__init__(self, self.path_string(), **kwargs)
+	
+	def draw_self(self, canvas, pen, brush):
+		if self.slice_pos != 0.:
+			Symbol.draw_self(self, canvas, pen, brush)
+	
+	def path_string(self):
+		"""
+		Return the curve as an SVG path string
+		"""
+		coords = reduce(lambda p,c: p + [int(c[0]), int(c[1])], self.drawn, [])
+		path = "M {} {} C {} {}, {} {}, {} {}".format(*coords)
+		if self.close_path:
+			path += " Z"
+		return path
+	
+	def update_drawing(self):
+		"""
+		Update the internal symbol
+		"""
+		self.symbol = aggdraw.Symbol(self.path_string())
+	
+	def slice(self, t):
+		"""
+		Set the drawn curve to be a slice of the original
+		"""
+		self.slice_pos = t
+		self.drawn = slice_curve(self.slice_pos, *self.anchors)
+		self.update_drawing()
 
 class BoundedShape(Shape):
 	"""
@@ -55,27 +118,14 @@ class Line(BoundedShape):
 	"""
 	Simple line
 	"""
-	def draw_self(self, canvas, pen, brush):
-		canvas.drawing.line(self.bounds, pen)
-
-class Symbol(BoundedShape):
-	"""
-	SVG path object
-	"""
-	def __init__(self, bounds, path, **kwargs):
-		assert isinstance(path, str), "Path must be a string"
-		symbol = aggdraw.Symbol(path)
-		handle_config(self, kwargs, locals())
+	def __init__(self, p0, p1, **kwargs):
+		for p in [p0, p1]:
+			assert_point(p)
+		bounds = (p0[0], p0[1], p1[0], p1[1])
 		BoundedShape.__init__(self, bounds, **kwargs)
 	
 	def draw_self(self, canvas, pen, brush):
-		canvas.drawing.symbol(self.bounds, self.symbol, pen, brush)
-	
-	def update(self):
-		"""
-		Update the internal aggdraw symbol object
-		"""
-		self.symbol = aggdraw.Symbol(self.path)
+		canvas.drawing.line(self.bounds, pen)
 
 class SliceShape(BoundedShape):
 	"""
