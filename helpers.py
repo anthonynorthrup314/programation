@@ -10,6 +10,7 @@ import Tkinter as tk
 # Constants
 DEF_WIDTH = 640
 DEF_HEIGHT = 480
+DEF_FRAMETIME = 1. / 5
 
 def filter_locals(local_args):
 	"""
@@ -56,7 +57,7 @@ def handle_config(self, kwargs, local_args = {}):
 	all_configs += configs
 	self.__dict__ = combine_configs(all_configs)
 
-def change_kwargs(kwargs={}, **changes):
+def change_kwargs(kwargs, **changes):
 	"""
 	Modify an existing kwargs object
 	"""
@@ -169,3 +170,9 @@ def slice_curve(t, p0, p1, p2, p3):
 	resultX = Q * np.matrix([p0[0], p1[0], p2[0], p3[0]]).getT()
 	resultY = Q * np.matrix([p0[1], p1[1], p2[1], p3[1]]).getT()
 	return zip(resultX.getA1(), resultY.getA1())
+
+def mod_positive(a, b):
+	"""
+	Returns a positive mod
+	"""
+	return ((a % b) + b) % b

@@ -14,11 +14,8 @@ class Canvas(object):
 		"width": DEF_WIDTH,
 		"height": DEF_HEIGHT,
 	}
-	def __init__(self, width, height, **kwargs):
-		for v in [width, height]:
-			assert isinstance(v, int), "Dimensions must be integers"
-			assert v > 0, "Dimensions must be larger than 0"
-		handle_config(self, kwargs, locals());
+	def __init__(self, **kwargs):
+		handle_config(self, kwargs);
 		self.data = np.zeros((self.height, self.width, 3))
 	
 	def copy(self):
@@ -75,24 +72,3 @@ class Canvas(object):
 		if transform:
 			self.drawing.settransform(transform.to_array())
 			self.hasTransform = True
-	
-	def show(self):
-		"""
-		Show the canvas in a Tk window
-		"""
-		#TODO Move to separate class that handles multiple frames
-		# Setup Tk
-		padding = 1
-		root = tk.Tk()
-		root.geometry('{}x{}'.format(self.width + 2 * padding, self.height + 2 * padding))
-		root.resizable(0, 0)
-		# Create canvas object
-		canvas = tk.Canvas(root, width = self.width, height = self.height)
-		canvas.pack()
-		# Convert to displayable image
-		img = image_from_array(self.data)
-		imgP = ImageTk.PhotoImage(img)
-		# Add image to canvas
-		imgC = canvas.create_image(padding, padding, image = imgP, anchor = "nw")
-		# Display the window
-		root.mainloop()
