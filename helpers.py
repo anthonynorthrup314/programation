@@ -155,7 +155,7 @@ def assert_point(p):
 	Assertions for a valid point
 	"""
 	assert isinstance(p, tuple), "Must provide points as tuples"
-	assert len(p) == 2, "Must provide pairs of points"
+	assert len(p) == 2, "Must provide pairs of coordinates"
 	for v in p:
 		assert is_number(v), "Must provide coordinates as numbers"
 
@@ -176,3 +176,28 @@ def mod_positive(a, b):
 	Returns a positive mod
 	"""
 	return ((a % b) + b) % b
+
+def get_third_vector(p0, p1):
+	"""
+	Self explanatory
+	"""
+	return np.divide(np.subtract(p1, p0), 3.)
+
+def get_third(p0, p1):
+	"""
+	Self explanatory
+	"""
+	return np.add(p0, get_third_vector(p0, p1))
+
+def get_flat_handles(p0, p1, p2):
+	"""
+	Get the control points around p1
+	"""
+	return np.array([get_third(p1, p0), get_third(p1, p2)])
+
+def get_smooth_handles(p0, p1, p2):
+	"""
+	Get the control points around p1
+	"""
+	third = get_third_vector(p0, p2)
+	return np.array([np.subtract(p1, third), np.add(p1, third)])
