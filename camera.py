@@ -49,10 +49,11 @@ class TkCamera(tk.Tk):
 		"temp": {}
 	}
 	def __init__(self, camera, **kwargs):
+		width, height = camera.width, camera.height
 		handle_config(self, kwargs, locals())
 		tk.Tk.__init__(self)
 		# Setup Tk
-		w, h, p = self.camera.width, self.camera.height, self.padding
+		w, h, p = self.width, self.height, self.padding
 		self.geometry('{}x{}'.format(w + 2 * p, h + 2 * p))
 		self.resizable(0, 0)
 		self.bind("<Key>", self.cb_key)
@@ -78,6 +79,8 @@ class TkCamera(tk.Tk):
 		# Convert to displayable image
 		data = self.camera.frames[self.frame]
 		self.temp["img"] = image_from_array(data)
+		if (self.width, self.height) != (self.camera.width, self.camera.height):
+			self.temp["img"] = self.temp["img"].resize((self.width, self.height))
 		self.temp["imgP"] = ImageTk.PhotoImage(image = self.temp["img"])
 		# Add image to canvas
 		self.temp["imgC"] = self.canvas.create_image(self.padding, self.padding, image = self.temp["imgP"], anchor = "nw")
