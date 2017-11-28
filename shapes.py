@@ -163,6 +163,7 @@ class Polyline(Symbol):
 	"""
 	CONFIG = {
 		"smooth": False,
+		"smooth_factor": None,
 		"closed": False
 	}
 	def __init__(self, *points, **kwargs):
@@ -203,14 +204,14 @@ class Polyline(Symbol):
 		# Calculate handles for middle points
 		for i in range(1, m):
 			handle_func = get_smooth_handles if self.smooth else get_flat_handles
-			handles = handle_func(*points[i - 1 : i + 2])
+			handles = handle_func(*points[i - 1 : i + 2], factor = self.smooth_factor)
 			self.handles[i - 1, 1, :] = handles[0, :]
 			self.handles[i, 0, :] = handles[1, :]
 		# Calculate handles for start/end
 		if self.closed and self.smooth:
-			handles = get_smooth_handles(points[m - 1], points[0], points[1])
+			handles = get_smooth_handles(points[m - 1], points[0], points[1], factor = self.smooth_factor)
 			self.handles[m - 1, 1, :] = handles[0, :]
 			self.handles[0, 0, :] = handles[1, :]
 		else:
-			self.handles[m - 1, 1, :] = get_third(points[m], points[m - 1])
-			self.handles[0, 0, :] = get_third(points[0], points[1])
+			self.handles[m - 1, 1, :] = get_third(points[m], points[m - 1], factor = self.smooth_factor)
+			self.handles[0, 0, :] = get_third(points[0], points[1], factor = self.smooth_factor)

@@ -177,27 +177,29 @@ def mod_positive(a, b):
 	"""
 	return ((a % b) + b) % b
 
-def get_third_vector(p0, p1):
+def get_third_vector(p0, p1, factor = None):
 	"""
 	Self explanatory
 	"""
-	return np.divide(np.subtract(p1, p0), 3.)
+	if not factor:
+		factor = 1. / 3.
+	return np.multiply(np.subtract(p1, p0), float(factor))
 
-def get_third(p0, p1):
+def get_third(p0, p1, factor = None):
 	"""
 	Self explanatory
 	"""
-	return np.add(p0, get_third_vector(p0, p1))
+	return np.add(p0, get_third_vector(p0, p1, factor))
 
-def get_flat_handles(p0, p1, p2):
+def get_flat_handles(p0, p1, p2, factor = None):
 	"""
 	Get the control points around p1
 	"""
-	return np.array([get_third(p1, p0), get_third(p1, p2)])
+	return np.array([get_third(p1, p0, factor), get_third(p1, p2, factor)])
 
-def get_smooth_handles(p0, p1, p2):
+def get_smooth_handles(p0, p1, p2, factor = None):
 	"""
 	Get the control points around p1
 	"""
-	third = get_third_vector(p0, p2)
+	third = get_third_vector(p0, p2, factor)
 	return np.array([np.subtract(p1, third), np.add(p1, third)])
