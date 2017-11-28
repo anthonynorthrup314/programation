@@ -27,6 +27,8 @@ def main():
 		f2 = 1. * (i + 1) / (parts + 1)
 		b2.slice(1. * f)
 		s.update_transform(Transform.RESIZE_ABOUT(w / 2, h / 2, 2. * f2, 1. * f2))
+		p.points[0, :] = [w / 2 * f2, h / 2 * f2]
+		p.update_symbol()
 		c.capture_frame(s, p)
 	c.show()
 
