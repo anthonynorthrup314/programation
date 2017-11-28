@@ -40,10 +40,13 @@ class TkCamera(tk.Tk):
 	Tk window for displaying camera data
 	"""
 	CONFIG = {
+		"fps": DEF_FPS,
+		"paused": False,
+		"do_step": False,
 		"frame": 0,
 		"frame_speed": 1,
-		"fps": DEF_FPS,
-		"padding": 1
+		"padding": 1,
+		"temp": {}
 	}
 	def __init__(self, camera, **kwargs):
 		handle_config(self, kwargs, locals())
@@ -52,6 +55,7 @@ class TkCamera(tk.Tk):
 		w, h, p = self.camera.width, self.camera.height, self.padding
 		self.geometry('{}x{}'.format(w + 2 * p, h + 2 * p))
 		self.resizable(0, 0)
+		self.bind("<Key>", self.cb_key)
 		# Create canvas object
 		self.canvas = tk.Canvas(self, width = w, height = h)
 		self.canvas.pack()
@@ -71,14 +75,15 @@ class TkCamera(tk.Tk):
 		"""
 		# Clear previous frame
 		self.canvas.delete("all")
-		# Store on self to avoid GC
-		self.temp = {}
 		# Convert to displayable image
 		data = self.camera.frames[self.frame]
 		self.temp["img"] = image_from_array(data)
 		self.temp["imgP"] = ImageTk.PhotoImage(image = self.temp["img"])
 		# Add image to canvas
 		self.temp["imgC"] = self.canvas.create_image(self.padding, self.padding, image = self.temp["imgP"], anchor = "nw")
+		# Add paused notice
+		if self.paused:
+			self.temp["paused"] = self.canvas.create_text(self.padding, self.padding, text = "PAUSED {}/{}".format(self.frame + 1, len(self.camera.frames)), fill = "#FFFFFF", anchor = "nw")
 	
 	def step(self):
 		"""
@@ -88,29 +93,47 @@ class TkCamera(tk.Tk):
 		if self.frame_speed == 0:
 			# Won't update again
 			return
-		# Next frame, handle loop behavior
-		if self.frame_speed > 0 and self.frame + self.frame_speed >= len(self.camera.frames):
-			if self.camera.loop_behavior == "loop":
-				self.frame = self.frame + self.frame_speed - len(self.camera.frames)
-			elif self.camera.loop_behavior == "reverse":
-				self.frame = 2 * len(self.camera.frames) - (self.frame + self.frame_speed) - 1
-				self.frame_speed *= -1
-			else: # once
-				self.frame = len(self.camera.frames) - 1
-				self.frame_speed = 0
-		elif self.frame_speed < 0 and self.frame + self.frame_speed < 0:
-			if self.camera.loop_behavior == "loop":
-				self.frame = self.frame + self.frame_speed + len(self.camera.frames)
-			elif self.camera.loop_behavior == "reverse":
-				self.frame = -(self.frame + self.frame_speed)
-				self.frame_speed *= -1
-			else: # once
-				self.frame = 0
-				self.frame_speed = 0
-		else:
-			self.frame += self.frame_speed
-		# Display current frame
-		self.update_frame()
+		# Update screen if not paused
+		if not self.paused or self.do_step:
+			self.do_step = False
+			# Next frame, handle loop behavior
+			if self.frame_speed > 0 and self.frame + self.frame_speed >= len(self.camera.frames):
+				if self.camera.loop_behavior == "loop":
+					self.frame = self.frame + self.frame_speed - len(self.camera.frames)
+				elif self.camera.loop_behavior == "reverse":
+					self.frame = 2 * len(self.camera.frames) - (self.frame + self.frame_speed) - 1
+					self.frame_speed *= -1
+				else: # once
+					self.frame = len(self.camera.frames) - 1
+					self.frame_speed = 0
+			elif self.frame_speed < 0 and self.frame + self.frame_speed < 0:
+				if self.camera.loop_behavior == "loop":
+					self.frame = self.frame + self.frame_speed + len(self.camera.frames)
+				elif self.camera.loop_behavior == "reverse":
+					self.frame = -(self.frame + self.frame_speed)
+					self.frame_speed *= -1
+				else: # once
+					self.frame = 0
+					self.frame_speed = 0
+			else:
+				self.frame += self.frame_speed
+			# Display current frame
+			self.update_frame()
 		# Call step again later
 		delay = int(math.ceil(1000. / self.fps)) if self.fps != 0 else 1
 		self.after(delay, self.step)
+	
+	def cb_key(self, event):
+		"""
+		Callback for key events
+		"""
+		key = event.keysym.lower()
+		is_lower = key == event.keysym
+		if key == "escape":
+			self.destroy()
+		elif key == "p":
+			self.paused = not self.paused
+			self.update_frame()
+		elif key in ("enter", "space"):
+			if self.paused:
+				self.do_step = True
