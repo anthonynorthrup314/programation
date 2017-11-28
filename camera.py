@@ -35,25 +35,25 @@ class Camera(object):
 		"""
 		TkCamera(self, **kwargs)
 
-class TkCamera(object):
+class TkCamera(tk.Tk):
 	"""
 	Tk window for displaying camera data
 	"""
 	CONFIG = {
 		"frame": 0,
 		"frame_speed": 1,
-		"frame_time": DEF_FRAMETIME,
+		"fps": DEF_FPS,
 		"padding": 1
 	}
 	def __init__(self, camera, **kwargs):
 		handle_config(self, kwargs, locals())
+		tk.Tk.__init__(self)
 		# Setup Tk
 		w, h, p = self.camera.width, self.camera.height, self.padding
-		self.root = tk.Tk()
-		self.root.geometry('{}x{}'.format(w + 2 * p, h + 2 * p))
-		self.root.resizable(0, 0)
+		self.geometry('{}x{}'.format(w + 2 * p, h + 2 * p))
+		self.resizable(0, 0)
 		# Create canvas object
-		self.canvas = tk.Canvas(self.root, width = w, height = h)
+		self.canvas = tk.Canvas(self, width = w, height = h)
 		self.canvas.pack()
 		# Display the first frame
 		if len(self.camera.frames) > 0:
@@ -63,7 +63,7 @@ class TkCamera(object):
 			self.frame_speed = 0
 		# Run loop
 		self.step()
-		self.root.mainloop()
+		self.mainloop()
 	
 	def update_frame(self):
 		"""
@@ -72,11 +72,11 @@ class TkCamera(object):
 		# Clear previous frame
 		self.canvas.delete("all")
 		# Store on self to avoid GC
-		self.temp = dict(img=None, imgP=None, imgC=None)
+		self.temp = {}
 		# Convert to displayable image
 		data = self.camera.frames[self.frame]
 		self.temp["img"] = image_from_array(data)
-		self.temp["imgP"] = ImageTk.PhotoImage(master = self.canvas, width = self.camera.width, height = self.camera.height, image = self.temp["img"])
+		self.temp["imgP"] = ImageTk.PhotoImage(image = self.temp["img"])
 		# Add image to canvas
 		self.temp["imgC"] = self.canvas.create_image(self.padding, self.padding, image = self.temp["imgP"], anchor = "nw")
 	
@@ -93,19 +93,24 @@ class TkCamera(object):
 			if self.camera.loop_behavior == "loop":
 				self.frame = self.frame + self.frame_speed - len(self.camera.frames)
 			elif self.camera.loop_behavior == "reverse":
-				self.frame = 2 * len(self.camera.frames) - (self.frame + self.frame_speed)
+				self.frame = 2 * len(self.camera.frames) - (self.frame + self.frame_speed) - 1
+				self.frame_speed *= -1
 			else: # once
 				self.frame = len(self.camera.frames) - 1
+				self.frame_speed = 0
 		elif self.frame_speed < 0 and self.frame + self.frame_speed < 0:
 			if self.camera.loop_behavior == "loop":
 				self.frame = self.frame + self.frame_speed + len(self.camera.frames)
 			elif self.camera.loop_behavior == "reverse":
 				self.frame = -(self.frame + self.frame_speed)
+				self.frame_speed *= -1
 			else: # once
 				self.frame = 0
+				self.frame_speed = 0
 		else:
 			self.frame += self.frame_speed
 		# Display current frame
 		self.update_frame()
 		# Call step again later
-		self.root.after(int(math.ceil(self.frame_time * 1000.)), self.step)
+		delay = int(math.ceil(1000. / self.fps)) if self.fps != 0 else 1
+		self.after(delay, self.step)

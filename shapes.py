@@ -51,7 +51,7 @@ class Symbol(Shape):
 		Shape.__init__(self, **kwargs)
 	
 	def draw_self(self, canvas, pen, brush):
-		canvas.drawing.symbol(canvas.bounds(), self.symbol, pen, brush)
+		canvas.drawing.symbol(LARGE_BOUNDS, self.symbol, pen, brush)
 	
 	def update_symbol(self):
 		"""

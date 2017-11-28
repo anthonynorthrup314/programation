@@ -10,7 +10,9 @@ import Tkinter as tk
 # Constants
 DEF_WIDTH = 640
 DEF_HEIGHT = 480
-DEF_FRAMETIME = 1. / 5
+DEF_FPS = 30
+LARGE = 1000000000
+LARGE_BOUNDS = (0, 0, LARGE, LARGE)
 
 def filter_locals(local_args):
 	"""

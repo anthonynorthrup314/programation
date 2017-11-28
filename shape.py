@@ -130,7 +130,7 @@ class Shape(object):
 			if self.parent_transform:
 				self.global_transform.merge(self.parent_transform)
 		else:
-			self.global_transform = self.parent_transform
+			self.global_transform = self.parent_transform.copy()
 		# Update children
 		for child in self.children:
 			child.update_transform(self.global_transform)
