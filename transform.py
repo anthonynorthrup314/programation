@@ -3,7 +3,7 @@ import math
 
 import numpy as np
 
-from helpers import *
+import helpers
 
 class Transform(object):
     """Affine transform

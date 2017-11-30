@@ -4,19 +4,18 @@ import aggdraw
 from PIL import Image, ImageTk
 import Tkinter as tk
 
-from helpers import *
-from shape import *
+import helpers
 
 class Canvas(object):
     """Handles the drawing of Shapes"""
     
     CONFIG = {
-        "width": DEF_WIDTH,
-        "height": DEF_HEIGHT,
+        "width": helpers.DEF_WIDTH,
+        "height": helpers.DEF_HEIGHT,
     }
     
     def __init__(self, **kwargs):
-        handle_config(self, kwargs);
+        helpers.handle_config(self, kwargs);
         self.data = np.zeros((self.height, self.width, 3))
     
     def copy(self):
@@ -48,7 +47,7 @@ class Canvas(object):
         else:
             self.data = np.zeros((self.height, self.width, 3))
         # Setup the image
-        self.img = image_from_array(self.data)
+        self.img = helpers.image_from_array(self.data)
         self.drawing = aggdraw.Draw(self.img)
         self.hasTransform = False
         # Draw each shape
@@ -65,10 +64,10 @@ class Canvas(object):
         """Setup the aggdraw transformation"""
         # Remove previous transform
         if self.hasTransform:
-            if not transform:
+            if transform is None:
                 self.drawing.settransform()
                 self.hasTransform = False
         # Use new transform
-        if transform:
+        if transform is not None:
             self.drawing.settransform(transform.to_array())
             self.hasTransform = True

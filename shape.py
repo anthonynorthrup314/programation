@@ -3,8 +3,8 @@ from copy import deepcopy
 import aggdraw
 from colour import Color
 
-from helpers import *
-from transform import *
+import helpers
+import transform
 
 class Shape(object):
     """Defines default values for other shapes"""
@@ -23,8 +23,8 @@ class Shape(object):
     }
     
     def __init__(self, **kwargs):
-        handle_config(self, kwargs)
-        if not self.name:
+        helpers.handle_config(self, kwargs)
+        if self.name is None:
             self.name = self.__class__.__name__
         self.validate_children()
         self.update_transform()
@@ -96,16 +96,19 @@ class Shape(object):
     def get_pen(self):
         """Create a pen from stroke properties"""
         # No stroke?
-        if not self.stroke_color or self.stroke_width <= 0. or self.stroke_alpha <= 0.:
+        if (self.stroke_color is None or self.stroke_width <= 0. or
+                self.stroke_alpha <= 0.):
             return None
-        return aggdraw.Pen(self.stroke_color.hex_l, width = self.stroke_width, opacity = int(255 * self.stroke_alpha))
+        return aggdraw.Pen(self.stroke_color.hex_l, width=self.stroke_width,
+                           opacity=int(255 * self.stroke_alpha))
     
     def get_brush(self):
         """Create a brush from fill properties"""
         # No fill?
-        if not self.fill_color or self.fill_alpha <= 0.:
+        if self.fill_color is None or self.fill_alpha <= 0.:
             return None
-        return aggdraw.Brush(self.fill_color.hex_l, opacity = int(255 * self.fill_alpha))
+        return aggdraw.Brush(self.fill_color.hex_l,
+                             opacity=int(255 * self.fill_alpha))
     
     def update_transform(self, parent_transform=False):
         """Update and/or propogate parent transform

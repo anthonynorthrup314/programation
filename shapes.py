@@ -1,7 +1,7 @@
 import aggdraw
 
-from helpers import *
-from shape import *
+import helpers
+import shape
 
 class TestShape(Shape):
     """Just has an example drawing"""

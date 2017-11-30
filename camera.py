@@ -4,24 +4,24 @@ import numpy as np
 from PIL import Image, ImageTk
 import Tkinter as tk
 
-from canvas import *
-from helpers import *
-from shape import *
+import canvas
+import helpers
+import shape
 
 class Camera(object):
     """Controls multi-frame capture/display"""
     
     CONFIG = {
-        "width": DEF_WIDTH,
-        "height": DEF_HEIGHT,
+        "width": helpers.DEF_WIDTH,
+        "height": helpers.DEF_HEIGHT,
         "frames": [],
         "loop_behavior": "loop", # Possible values: once, loop, reverse
         "canvas_config": {}
     }
     
     def __init__(self, **kwargs):
-        handle_config(self, kwargs)
-        self.canvas = Canvas(**change_kwargs(
+        helpers.handle_config(self, kwargs)
+        self.canvas = canvas.Canvas(**helpers.change_kwargs(
             self.canvas_config, width=self.width, height=self.height))
     
     def capture_frame(self, *objects):
@@ -40,7 +40,7 @@ class TkCamera(tk.Tk):
     """Tk window for displaying camera data"""
     
     CONFIG = {
-        "fps": DEF_FPS,
+        "fps": helpers.DEF_FPS,
         "paused": False,
         "do_step": False,
         "frame": 0,
@@ -51,7 +51,7 @@ class TkCamera(tk.Tk):
     
     def __init__(self, camera, **kwargs):
         width, height = camera.width, camera.height
-        handle_config(self, kwargs, locals())
+        helpers.handle_config(self, kwargs, locals())
         tk.Tk.__init__(self)
         # Setup Tk
         w, h, p = self.width, self.height, self.padding
@@ -77,7 +77,7 @@ class TkCamera(tk.Tk):
         self.canvas.delete("all")
         # Convert to displayable image
         data = self.camera.frames[self.frame]
-        self.temp["img"] = image_from_array(data)
+        self.temp["img"] = helpers.image_from_array(data)
         if (self.width, self.height) != (self.camera.width,
                 self.camera.height):
             self.temp["img"] = self.temp["img"].resize((self.width,

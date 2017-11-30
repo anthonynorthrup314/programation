@@ -1,10 +1,10 @@
 from colour import Color
 
-from canvas import *
-from camera import *
-from helpers import *
-from shapes import *
-from transform import *
+import canvas
+import camera
+import helpers
+import shapes
+import transform
 
 def main():
     # Size
@@ -21,7 +21,7 @@ def main():
     b1 = BezierCurve((0, 0), (0, h), (w, h), (w, 0), stroke_color="#FF00FF",
                      stroke_width=8.)
     b2 = BezierCurve((0, 0), (0, h), (w, h), (w, 0), stroke_color="aqua",
-                     stroke_width=5., slice_pos  5, close_path=True)
+                     stroke_width=5., slice_pos=.5, close_path=True)
     b3 = BezierCurve((0, 0), (0, h), (w, h), (w, 0), stroke_color=(1., 0., 0.),
                      stroke_width=2., slice_pos=.25)
     s.add(b1, b2, b3)
