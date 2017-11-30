@@ -22,7 +22,7 @@ class Camera(object):
     def __init__(self, **kwargs):
         handle_config(self, kwargs)
         self.canvas = Canvas(**change_kwargs(
-            self.canvas_config, width = self.width, height = self.height))
+            self.canvas_config, width=self.width, height=self.height))
     
     def capture_frame(self, *objects):
         """Create a new frame
@@ -59,7 +59,7 @@ class TkCamera(tk.Tk):
         self.resizable(0, 0)
         self.bind("<Key>", self.cb_key)
         # Create canvas object
-        self.canvas = tk.Canvas(self, width = w, height = h)
+        self.canvas = tk.Canvas(self, width=w, height=h)
         self.canvas.pack()
         # Display the first frame
         if len(self.camera.frames) > 0:
@@ -82,7 +82,7 @@ class TkCamera(tk.Tk):
                 self.camera.height):
             self.temp["img"] = self.temp["img"].resize((self.width,
                                                         self.height))
-        self.temp["imgP"] = ImageTk.PhotoImage(image = self.temp["img"])
+        self.temp["imgP"] = ImageTk.PhotoImage(image=self.temp["img"])
         # Add image to canvas
         self.temp["imgC"] = self.canvas.create_image(
             self.padding, self.padding, image = self.temp["imgP"],

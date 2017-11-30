@@ -124,7 +124,7 @@ class BezierCurve(Symbol):
             assert len(p) == 2, "Must provide pairs of points"
             for v in p:
                 assert is_number(v), "Must provide coordinates as numbers"
-        handle_config(self, kwargs, dict(anchors = [p0, p1, p2, p3]))
+        handle_config(self, kwargs, dict(anchors=[p0, p1, p2, p3]))
         Symbol.__init__(self, "", **kwargs)
     
     def draw_self(self, canvas, pen, brush):
@@ -191,17 +191,17 @@ class Polyline(Symbol):
             handle_func = (get_smooth_handles if self.smooth
                            else get_flat_handles)
             handles = handle_func(*points[i - 1 : i + 2],
-                                  factor = self.smooth_factor)
+                                  factor=self.smooth_factor)
             self.handles[i - 1, 1, :] = handles[0, :]
             self.handles[i, 0, :] = handles[1, :]
         # Calculate handles for start/end
         if self.closed and self.smooth:
             handles = get_smooth_handles(points[m - 1], points[0], points[1],
-                                         factor = self.smooth_factor)
+                                         factor=self.smooth_factor)
             self.handles[m - 1, 1, :] = handles[0, :]
             self.handles[0, 0, :] = handles[1, :]
         else:
             self.handles[m - 1, 1, :] = get_third(points[m], points[m - 1],
-                                                  factor = self.smooth_factor)
+                                                  factor=self.smooth_factor)
             self.handles[0, 0, :] = get_third(points[0], points[1],
-                                              factor = self.smooth_factor)
+                                              factor=self.smooth_factor)
