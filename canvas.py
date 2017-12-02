@@ -1,10 +1,12 @@
 from copy import deepcopy
 
 import aggdraw
+import numpy as np
 from PIL import Image, ImageTk
 import Tkinter as tk
 
 import helpers
+import shape
 
 class Canvas(object):
     """Handles the drawing of Shapes"""
@@ -21,10 +23,10 @@ class Canvas(object):
     def copy(self):
         return deepcopy(self)
     
-    def draw(self, *shapes, **kwargs):
+    def draw(self, *shapes_, **kwargs):
         """Draw a list of shapes to the internal pixel data array
         
-        shapes -- List of Shape objects to draw
+        shapes_ -- List of Shape objects to draw
         
         Keyword arguments:
         background -- Previous frame to draw on instead of on a black
@@ -33,8 +35,9 @@ class Canvas(object):
         # Handle kwargs
         background = kwargs.pop("background", None)
         # Verify input
-        for shape in shapes:
-            assert isinstance(shape, Shape), "Can only draw shapes to a canvas"
+        for shape_ in shapes_:
+            assert (isinstance(shape_, shape.Shape),
+                    "Can only draw shapes to a canvas")
         if background:
             assert (isinstance(background, np.ndarray),
                     "Can only use a background stored as a numpy array")
@@ -51,8 +54,8 @@ class Canvas(object):
         self.drawing = aggdraw.Draw(self.img)
         self.hasTransform = False
         # Draw each shape
-        for shape in shapes:
-            shape.draw(self)
+        for shape_ in shapes_:
+            shape_.draw(self)
         # Cleanup
         self.drawing.flush()
         del self.hasTransform

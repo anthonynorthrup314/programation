@@ -19,7 +19,7 @@ class Transform(object):
     def __init__(self, a, b, c, d, e, f):
         # Ensure proper arguments
         for v in [a,b,c,d,e,f]:
-            assert is_number(v), "Parameters must be numbers"
+            assert helpers.is_number(v), "Parameters must be numbers"
         # Setup matrix
         self.matrix = np.matrix([[a, b, c], [d, e, f], [0., 0., 1.]])
     
@@ -150,7 +150,7 @@ class Transform(object):
     def ROTATE_ABOUT(xcenter, ycenter, angle):
         """Create a Rotation transform"""
         return Transform.SKEW_ABOUT(xcenter, ycenter,
-                                    *rotation_matrix(angle).getA1())
+                                    *helpers.rotation_matrix(angle).getA1())
     
     def rotate_about(self, xcenter, ycenter, angle):
         return self.merge(Transform.ROTATE_ABOUT(xcenter, ycenter, angle))
@@ -161,7 +161,7 @@ class Transform(object):
         return Transform.ROTATE_ABOUT(0, 0, angle)
     
     def set_rotate(angle):
-        return self.set_skew(*rotation_matrix(angle).getA1())
+        return self.set_skew(*helpers.rotation_matrix(angle).getA1())
     
     def rotate(angle):
         return self.merge(Transform.ROTATE(angle))

@@ -17,7 +17,7 @@ class Shape(object):
         "stroke_alpha": 1.,
         "fill_color": None,
         "fill_alpha": 1.,
-        "transform": Transform.IDENTITY(),
+        "transform": transform.Transform.IDENTITY(),
         "parent_transform": None,
         "global_transform": None,
     }
@@ -90,8 +90,8 @@ class Shape(object):
     
     def handle_colors(self):
         """Ensure color properties are Color objects"""
-        self.stroke_color = to_color(self.stroke_color)
-        self.fill_color = to_color(self.fill_color)
+        self.stroke_color = helpers.to_color(self.stroke_color)
+        self.fill_color = helpers.to_color(self.fill_color)
     
     def get_pen(self):
         """Create a pen from stroke properties"""
