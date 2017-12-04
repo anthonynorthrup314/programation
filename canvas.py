@@ -36,13 +36,13 @@ class Canvas(object):
         background = kwargs.pop("background", None)
         # Verify input
         for shape_ in shapes_:
-            assert (isinstance(shape_, shape.Shape),
-                    "Can only draw shapes to a canvas")
+            assert isinstance(shape_, shape.Shape), \
+                   "Can only draw shapes to a canvas"
         if background:
-            assert (isinstance(background, np.ndarray),
-                    "Can only use a background stored as a numpy array")
-            assert (self.data.shape == background.shape,
-                    "Can only use a background of the same dimensions")
+            assert isinstance(background, np.ndarray), \
+                   "Can only use a background stored as a numpy array"
+            assert self.data.shape == background.shape, \
+                   "Can only use a background of the same dimensions"
         assert len(kwargs) == 0, "Only supported keyword is 'background'"
         # Handle background
         if background:

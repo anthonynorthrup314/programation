@@ -54,9 +54,8 @@ class Line(BoundedShape):
     """Simple line"""
     
     def __init__(self, p0, p1, **kwargs):
-        for p in [p0, p1]:
-            helpers.assert_point(p)
-        BoundedShape.__init__(self, [p0, p1], **kwargs)
+        points = helpers.validate_points(p0, p1)
+        BoundedShape.__init__(self, points, **kwargs)
     
     def draw_self(self, canvas, pen, brush):
         canvas.drawing.line(self.bounds, pen)
@@ -156,9 +155,7 @@ class Polyline(Symbol):
     }
     
     def __init__(self, *points, **kwargs):
-        for p in points:
-            helpers.assert_point(p)
-        points = np.array([[float(p[0]), float(p[1])] for p in points])
+        points = helpers.validate_points(*points)
         helpers.handle_config(self, kwargs, locals())
         Symbol.__init__(self, "", **kwargs)
     

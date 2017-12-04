@@ -63,6 +63,16 @@ class Transform(object):
         self.matrix = other.matrix.dot(self.matrix)
         return self
     
+    def __mul__(self, other):
+        """Apply the transformation to another transformation/point"""
+        if isinstance(other, Transform):
+            return Transform(*self.matrix.dot(other.matrix).flatten()[0:6])
+        if isinstance(other, np.ndarray) and other.shape == (2,):
+            return self.matrix.dot(np.append(other, [1]))[0:2]
+        if isinstance(other, tuple) and len(other) == 2:
+            return self.apply(*other)
+        raise TypeError("Unsupported type")
+    
     @staticmethod
     def IDENTITY():
         """Create an Identity transformation"""

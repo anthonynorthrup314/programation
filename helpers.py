@@ -138,13 +138,6 @@ def validate_bounds(bounds):
             raise e
         raise ValueError("Bounds must be a list of 4 numbers")
 
-def assert_point(p):
-    """Assertions for a valid point"""
-    assert isinstance(p, tuple), "Must provide points as tuples"
-    assert len(p) == 2, "Must provide pairs of coordinates"
-    for v in p:
-        assert is_number(v), "Must provide coordinates as numbers"
-
 def slice_curve(t, p0, p1, p2, p3):
     """Returns a bezier curve holding [0, t] of the original
     
@@ -186,3 +179,18 @@ def get_smooth_handles(p0, p1, p2, factor=None):
     """
     third = get_third_vector(p0, p2, factor)
     return np.array([p1 - third, p1 + third])
+
+def validate_points(*points):
+    """Convert the points to a usable form, or error"""
+    try:
+        # Convert to float array
+        points = np.array(points)
+        points = points.astype(float)
+        # Ensure it has the form (X,2)
+        if len(points.shape) != 2 or points.shape[1] != 2:
+            raise ValueError("")
+        return points
+    except e:
+        if len(e.args) > 0:
+            raise e
+        raise ValueError("Points must be a list of number pairs")
