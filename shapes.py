@@ -133,8 +133,7 @@ class BezierCurve(Symbol):
             Symbol.draw_self(self, canvas, pen, brush)
     
     def path_string(self):
-        coords = reduce(lambda p,c: p + [int(c[0]), int(c[1])], self.drawn, [])
-        path = "M {} {} C {} {}, {} {}, {} {}".format(*coords)
+        path = "M {} {} C {} {}, {} {}, {} {}".format(*self.drawn.flatten())
         if self.close_path:
             path += " Z"
         return path

@@ -83,7 +83,7 @@ def degtorad(angle):
 def rotation_matrix(angle):
     """Compute the usual rotation matrix"""
     angle = degtorad(angle)
-    return np.matrix([[math.cos(angle), -math.sin(angle)],
+    return np.array([[math.cos(angle), -math.sin(angle)],
                       [math.sin(angle), math.cos(angle)]])
 
 def image_from_array(data):
@@ -151,15 +151,13 @@ def slice_curve(t, p0, p1, p2, p3):
     
     t -- Location to cut, 0 < t <= 1
     """
-    M = np.matrix([[1., 0., 0., 0.], [-3., 3., 0., 0.], [3., -6., 3., 0.],
+    M = np.array([[1., 0., 0., 0.], [-3., 3., 0., 0.], [3., -6., 3., 0.],
                    [-1., 3., -3., 1.]])
     c = 1. * t
-    C = np.matrix([[1., 0., 0., 0.], [0., c, 0., 0.], [0., 0., c**2, 0.],
+    C = np.array([[1., 0., 0., 0.], [0., c, 0., 0.], [0., 0., c**2, 0.],
                    [0., 0., 0., c**3]])
-    Q = M.getI() * C * M
-    resultX = Q * np.matrix([p0[0], p1[0], p2[0], p3[0]]).getT()
-    resultY = Q * np.matrix([p0[1], p1[1], p2[1], p3[1]]).getT()
-    return zip(resultX.getA1(), resultY.getA1())
+    Q = np.linalg.inv(M).dot(C).dot(M)
+    return Q.dot(np.array([p0, p1, p2, p3]))
 
 def mod_positive(a, b):
     """Return a positive mod"""
@@ -169,11 +167,11 @@ def get_third_vector(p0, p1, factor=None):
     """Get the vector: factor * (p1 - p0)"""
     if not factor:
         factor = 1. / 3.
-    return np.multiply(np.subtract(p1, p0), float(factor))
+    return (p1 - p0) * float(factor)
 
 def get_third(p0, p1, factor=None):
     """Get the vector: p0 + factor * (p1 - p0)"""
-    return np.add(p0, get_third_vector(p0, p1, factor))
+    return (p0 + get_third_vector(p0, p1, factor))
 
 def get_flat_handles(p0, p1, p2, factor=None):
     """Get the control points around p1
@@ -188,4 +186,4 @@ def get_smooth_handles(p0, p1, p2, factor=None):
     factor -- Passed to get_third method
     """
     third = get_third_vector(p0, p2, factor)
-    return np.array([np.subtract(p1, third), np.add(p1, third)])
+    return np.array([p1 - third, p1 + third])

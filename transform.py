@@ -21,7 +21,7 @@ class Transform(object):
         for v in [a,b,c,d,e,f]:
             assert helpers.is_number(v), "Parameters must be numbers"
         # Setup matrix
-        self.matrix = np.matrix([[a, b, c], [d, e, f], [0., 0., 1.]])
+        self.matrix = np.array([[a, b, c], [d, e, f], [0., 0., 1.]])
     
     def __str__(self):
         return "{{Transform: [{}, {}, {}, {}, {}, {}]}}".format(
@@ -46,21 +46,21 @@ class Transform(object):
         
         Returns: (a, b, c, d, e, f)
         """
-        return self.matrix.getA1()[0:6]
+        return tuple(self.matrix.flatten()[0:6])
     
     def apply(self, x, y):
         """Apply the matrix to a point"""
-        point = self.matrix * np.matrix([x, y, 1]).getT()
-        return point[0], point[1]
+        point = self.matrix.dot(np.array([[x], [y], [1]]))
+        return (point[0], point[1])
     
     def combine(self, other):
         """Combine two transformations (self on left)"""
-        self.matrix *= other.matrix
+        self.matrix = self.matrix.dot(other.matrix)
         return self
     
     def merge(self, other):
         """Combine two transformations (self on right)"""
-        self.matrix = other.matrix * self.matrix
+        self.matrix = other.matrix.dot(self.matrix)
         return self
     
     @staticmethod
@@ -74,22 +74,22 @@ class Transform(object):
         return Transform(1, 0, dx, 0, 1, dy)
     
     def set_shift(self, dx, dy):
-        self.matrix[0:2, 2] = np.matrix([dx, dy]).getT()
+        self.matrix[0:2, 2] = np.array([dx, dy])
         return self
     
     def shift(self, ddx, ddy):
-        self.matrix[0:2, 2] += np.matrix([ddx, ddy]).getT()
+        self.matrix[0:2, 2] += np.array([ddx, ddy])
         return self
     
     @staticmethod
     def SKEW_ABOUT(xcenter, ycenter, a, b, c, d):
         """Create a Skew transformation"""
-        offset = np.matrix([0, 0]).getT()
+        offset = np.array([[0], [0]])
         if xcenter != 0. or ycenter != 0.:
             # Compute the offset for unshift->transform->shift
-            center = np.matrix([xcenter, ycenter]).getT()
+            center = np.array([[xcenter], [ycenter]])
             offset = (np.identity(2, dtype=float)
-                      - np.matrix([[a, b], [c, d]])) * center
+                      - np.array([[a, b], [c, d]])).dot(center)
         return Transform(a, b, offset[0, 0], c, d, offset[1, 0])
     
     def skew_about(self, xcenter, ycenter, a, b, c, d):
@@ -101,7 +101,7 @@ class Transform(object):
         return Transform.SKEW_ABOUT(0, 0, a, b, c, d)
     
     def set_skew(self, a, b, c, d):
-        self.matrix[0:2, 0:2] = np.matrix([[a, b], [c, d]])
+        self.matrix[0:2, 0:2] = np.array([[a, b], [c, d]])
         return self
     
     def skew(self, a, b, c, d):
@@ -150,7 +150,7 @@ class Transform(object):
     def ROTATE_ABOUT(xcenter, ycenter, angle):
         """Create a Rotation transform"""
         return Transform.SKEW_ABOUT(xcenter, ycenter,
-                                    *helpers.rotation_matrix(angle).getA1())
+                                    *helpers.rotation_matrix(angle).flatten())
     
     def rotate_about(self, xcenter, ycenter, angle):
         return self.merge(Transform.ROTATE_ABOUT(xcenter, ycenter, angle))
@@ -161,7 +161,7 @@ class Transform(object):
         return Transform.ROTATE_ABOUT(0, 0, angle)
     
     def set_rotate(angle):
-        return self.set_skew(*helpers.rotation_matrix(angle).getA1())
+        return self.set_skew(*helpers.rotation_matrix(angle).flatten())
     
     def rotate(angle):
         return self.merge(Transform.ROTATE(angle))
