@@ -46,7 +46,7 @@ class Transform(object):
         
         Returns: (a, b, c, d, e, f)
         """
-        return tuple(self.matrix.flatten()[0:6])
+        return self.matrix.flatten()[0:6]
     
     def apply(self, x, y):
         """Apply the matrix to a point"""

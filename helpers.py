@@ -119,25 +119,24 @@ def to_color(col):
             raise e
         raise ValueError("Invalid color format: {}".format(col))
 
-def verify_bounds(bounds):
-    """Ensure the bounds are in a usable form"""
-    assert isinstance(bounds, tuple), "Bounds must be in the form of a tuple"
-    assert len(bounds) == 4, "Must provide four coordinates"
-    for v in bounds:
-        assert is_number(v), "Bounds must be a tuple of numbers"
-
-def bounds_from_points(*points):
-    """Create a bounds tuple enclosing the points"""
-    if len(points) == 0:
-        return (0, 0, 0, 0)
-    p0 = points[0]
-    xmin, ymin, xmax, ymax = p0[0], p0[1], p0[0], p0[1]
-    for p in points:
-        xmin = min(xmin, p[0])
-        ymin = min(ymin, p[1])
-        xmax = max(xmax, p[0])
-        ymax = max(ymax, p[1])
-    return (xmin, ymin, xmax, ymax)
+def validate_bounds(bounds):
+    """Convert the bounds to a usable form, or error"""
+    try:
+        # Convert to float array
+        bounds = np.array(bounds)
+        bounds = bounds.astype(float)
+        # Ensure it has 4 elements
+        bounds = bounds.flatten()
+        if bounds.shape != (4,):
+            raise ValueError("")
+        # Non-zero size?
+        if bounds[0] == bounds[2] or bounds[1] == bounds[3]:
+            raise ValueError("Bounds must have non-zero size")
+        return bounds
+    except e:
+        if len(e.args) > 0:
+            raise e
+        raise ValueError("Bounds must be a list of 4 numbers")
 
 def assert_point(p):
     """Assertions for a valid point"""

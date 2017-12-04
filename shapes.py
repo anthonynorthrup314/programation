@@ -46,7 +46,7 @@ class BoundedShape(shape.Shape):
     """A shape with bounds"""
     
     def __init__(self, bounds, **kwargs):
-        helpers.verify_bounds(bounds)
+        bounds = helpers.validate_bounds(bounds)
         helpers.handle_config(self, kwargs, locals())
         shape.Shape.__init__(self, **kwargs)
 
@@ -56,8 +56,7 @@ class Line(BoundedShape):
     def __init__(self, p0, p1, **kwargs):
         for p in [p0, p1]:
             helpers.assert_point(p)
-        bounds = (p0[0], p0[1], p1[0], p1[1])
-        BoundedShape.__init__(self, bounds, **kwargs)
+        BoundedShape.__init__(self, [p0, p1], **kwargs)
     
     def draw_self(self, canvas, pen, brush):
         canvas.drawing.line(self.bounds, pen)
