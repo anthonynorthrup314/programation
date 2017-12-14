@@ -28,7 +28,7 @@ def main():
                             slice_pos=.25)
     s.add(b1, b2, b3)
     p = shapes.Polyline((w / 4, h / 4), (w / 2, 3 * h / 4), (3 * w / 4, h / 4),
-                        smooth=True, closed=True, stroke_color="white")
+                        (w / 4, h / 4), smooth=True, stroke_color="white")
     for shape in s.flatten():
         print shape
     parts = helpers.DEF_FPS
@@ -39,7 +39,7 @@ def main():
         s.update_transform(transform.Transform.RESIZE_ABOUT(w / 2, h / 2,
                                                             2. * f2,
                                                             1. * f2))
-        p.points[0, :] = [w / 2 * f2, h / 2 * f2]
+        p.points[0, :] = p.points[-1, :] = [w / 2 * f2, h / 2 * f2]
         p.update_symbol()
         c.capture_frame(s, p)
     c.show()

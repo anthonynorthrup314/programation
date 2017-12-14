@@ -150,8 +150,7 @@ class Polyline(Symbol):
     
     CONFIG = {
         "smooth": False,
-        "smooth_factor": None,
-        "closed": False
+        "smooth_factor": None
     }
     
     def __init__(self, *points, **kwargs):
@@ -159,17 +158,13 @@ class Polyline(Symbol):
         helpers.handle_config(self, kwargs, locals())
         Symbol.__init__(self, "", **kwargs)
     
-    def draw_self(self, canvas, pen, brush):
-        canvas.drawing.symbol((0, 0), self.symbol, pen, brush)
-    
     def path_string(self):
-        n = len(self.points)
         path = "M {} {}".format(self.points[0, 0], self.points[0, 1])
-        for i in range(len(self.handles)):
-            triplet = np.array([self.handles[i, 0, :], self.handles[i, 1, :],
-                                self.points[(i + 1) % n, :]])
-            path += "C {} {}, {} {}, {} {}".format(*triplet.flatten())
-        if self.closed:
+        for i in range(self.handles.shape[1]):
+            triplet = np.array([self.handles[0, i, :], self.handles[1, i, :],
+                                self.points[i + 1, :]])
+            path += " C {} {}, {} {}, {} {}".format(*triplet.flatten())
+        if helpers.is_path_closed(self.points):
             path += " Z"
         return path
     
@@ -178,26 +173,7 @@ class Polyline(Symbol):
         Symbol.update_symbol(self)
     
     def create_handles(self):
-        n = len(self.points)
-        m = n if self.closed else n - 1
-        self.handles = np.zeros((m, 2, 2))
-        points = np.append(self.points, self.points[0 : 2, :], axis = 0)
-        # Calculate handles for middle points
-        for i in range(1, m):
-            handle_func = (helpers.get_smooth_handles if self.smooth
-                           else helpers.get_flat_handles)
-            handles = handle_func(*points[i - 1 : i + 2],
-                                  factor=self.smooth_factor)
-            self.handles[i - 1, 1, :] = handles[0, :]
-            self.handles[i, 0, :] = handles[1, :]
-        # Calculate handles for start/end
-        if self.closed and self.smooth:
-            handles = helpers.get_smooth_handles(
-            	points[m - 1], points[0], points[1], factor=self.smooth_factor)
-            self.handles[m - 1, 1, :] = handles[0, :]
-            self.handles[0, 0, :] = handles[1, :]
+        if self.smooth:
+            self.handles = helpers.get_smooth_handles(self.points)
         else:
-            self.handles[m - 1, 1, :] = helpers.get_third(
-            	points[m], points[m - 1], factor=self.smooth_factor)
-            self.handles[0, 0, :] = helpers.get_third(
-            	points[0], points[1], factor=self.smooth_factor)
+            self.handles = helpers.get_flat_handles(self.points)

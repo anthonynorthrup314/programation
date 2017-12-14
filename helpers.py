@@ -3,6 +3,7 @@ import math
 from colour import Color
 import numpy as np
 from PIL import Image
+from scipy import linalg
 import Tkinter as tk
 
 # Some helpers copied from 3B1B's Manim project
@@ -12,6 +13,7 @@ import Tkinter as tk
 DEF_WIDTH = 640
 DEF_HEIGHT = 480
 DEF_FPS = 30
+ZERO_TOLERANCE = .1
 
 def filter_locals(local_args):
     """Remove the usual local variables
@@ -151,35 +153,6 @@ def slice_curve(t, p0, p1, p2, p3):
     Q = np.linalg.inv(M).dot(C).dot(M)
     return Q.dot(np.array([p0, p1, p2, p3]))
 
-def mod_positive(a, b):
-    """Return a positive mod"""
-    return ((a % b) + b) % b
-
-def get_third_vector(p0, p1, factor=None):
-    """Get the vector: factor * (p1 - p0)"""
-    if not factor:
-        factor = 1. / 3.
-    return (p1 - p0) * float(factor)
-
-def get_third(p0, p1, factor=None):
-    """Get the vector: p0 + factor * (p1 - p0)"""
-    return (p0 + get_third_vector(p0, p1, factor))
-
-def get_flat_handles(p0, p1, p2, factor=None):
-    """Get the control points around p1
-    
-    factor -- Passed to get_third method
-    """
-    return np.array([get_third(p1, p0, factor), get_third(p1, p2, factor)])
-
-def get_smooth_handles(p0, p1, p2, factor=None):
-    """Get the control points around p1
-    
-    factor -- Passed to get_third method
-    """
-    third = get_third_vector(p0, p2, factor)
-    return np.array([p1 - third, p1 + third])
-
 def validate_points(*points):
     """Convert the points to a usable form, or error"""
     try:
@@ -194,3 +167,68 @@ def validate_points(*points):
         if len(e.args) > 0:
             raise e
         raise ValueError("Points must be a list of number pairs")
+
+def get_flat_handles(points):
+    count = len(points) - 1
+    dim = points.shape[1]
+    if count < 1:
+        return np.zeros((2, 0, dim))
+    handles = np.zeros((2, count, dim))
+    for i in range(count):
+        handles[0, i, :] = points[i] + (points[i + 1] - points[i]) / 3.
+        handles[1, i, :] = points[i + 1] + (points[i] - points[i + 1]) / 3.
+    return handles
+
+def is_path_closed(points):
+    return linalg.norm(points[0] - points[-1]) <= ZERO_TOLERANCE
+
+def get_smooth_handles(points):
+    """Get handles for a smooth bezier curve spline
+    
+    Sources:
+    https://www.particleincell.com/2012/bezier-splines/
+        ~ Equations referenced
+    https://github.com/3b1b/manim/blob/master/helpers.py
+        ~ get_smooth_handle_points
+    """
+    count = len(points) - 1
+    dim = points.shape[1]
+    is_closed = is_path_closed(points)
+    A = np.zeros((2 * count, 2 * count))
+    B = np.zeros((2 * count, dim))
+    # First row
+    if is_closed: # Eq 2
+        A[0, [-2, -1, 0, 1]] = [1, -2, 2, -1]
+    else: # Eq 3
+        A[0, 0:2] = [2, -1]
+        B[0] = points[0]
+    # Middle
+    for i in range(1, count):
+        j = 2 * i - 1
+        # Eq 1
+        A[j, j : j + 2] = [1, 1]
+        B[j] = 2 * points[i]
+        # Eq 2
+        A[j + 1, j - 1 : j + 3] = [1, -2, 2, -1]
+    # Last row
+    if is_closed: # Eq 1
+        A[-1,[-1, 0]] = [1, 1]
+        B[-1] = 2 * points[0]
+    else: # Eq 4
+        A[-1, -2:] = [-1, 2]
+        B[-1] = points[-1]
+    # Solving: A * X = B
+    if is_closed: # Solve as whole matrix
+        X = linalg.solve(A, B)
+    else: # Solve as banded matrix
+        l, u = 2, 1
+        AB = np.zeros((l + u + 1, 2 * count))
+        AB[0, 1:] = np.diag(A, 1)
+        AB[1] = np.diag(A)
+        AB[2, :-1] = np.diag(A, -1)
+        AB[3, :-2] = np.diag(A, -2)
+        X = linalg.solve_banded((l,u), AB, B)
+    # Parse results
+    P1s = X[0::2]
+    P2s = X[1::2]
+    return np.array([P1s, P2s])
