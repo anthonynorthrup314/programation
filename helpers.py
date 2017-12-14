@@ -1,10 +1,9 @@
 import math
 
 from colour import Color
-import numpy as np
-from PIL import Image
-from scipy import linalg
-import Tkinter as tk
+import numpy
+import PIL.Image
+import scipy.linalg, scipy.misc
 
 # Some helpers copied from 3B1B's Manim project
 # https://github.com/3b1b/manim
@@ -85,12 +84,12 @@ def degtorad(angle):
 def rotation_matrix(angle):
     """Compute the usual rotation matrix"""
     angle = degtorad(angle)
-    return np.array([[math.cos(angle), -math.sin(angle)],
+    return numpy.array([[math.cos(angle), -math.sin(angle)],
                       [math.sin(angle), math.cos(angle)]])
 
 def image_from_array(data):
     """Convert a numpy array to a PIL image"""
-    return Image.fromarray(np.uint8(data))
+    return PIL.Image.fromarray(numpy.uint8(data))
 
 def to_color(col):
     """Convert different color representations to a Color object"""
@@ -125,7 +124,7 @@ def validate_bounds(bounds):
     """Convert the bounds to a usable form, or error"""
     try:
         # Convert to float array
-        bounds = np.array(bounds)
+        bounds = numpy.array(bounds)
         bounds = bounds.astype(float)
         # Ensure it has 4 elements
         bounds = bounds.flatten()
@@ -140,24 +139,11 @@ def validate_bounds(bounds):
             raise e
         raise ValueError("Bounds must be a list of 4 numbers")
 
-def slice_curve(t, p0, p1, p2, p3):
-    """Returns a bezier curve holding [0, t] of the original
-    
-    t -- Location to cut, 0 < t <= 1
-    """
-    M = np.array([[1., 0., 0., 0.], [-3., 3., 0., 0.], [3., -6., 3., 0.],
-                   [-1., 3., -3., 1.]])
-    c = 1. * t
-    C = np.array([[1., 0., 0., 0.], [0., c, 0., 0.], [0., 0., c**2, 0.],
-                   [0., 0., 0., c**3]])
-    Q = np.linalg.inv(M).dot(C).dot(M)
-    return Q.dot(np.array([p0, p1, p2, p3]))
-
 def validate_points(*points):
     """Convert the points to a usable form, or error"""
     try:
         # Convert to float array
-        points = np.array(points)
+        points = numpy.array(points)
         points = points.astype(float)
         # Ensure it has the form (X,2)
         if len(points.shape) != 2 or points.shape[1] != 2:
@@ -172,15 +158,15 @@ def get_flat_handles(points):
     count = len(points) - 1
     dim = points.shape[1]
     if count < 1:
-        return np.zeros((2, 0, dim))
-    handles = np.zeros((2, count, dim))
+        return numpy.zeros((2, 0, dim))
+    handles = numpy.zeros((2, count, dim))
     for i in range(count):
         handles[0, i, :] = points[i] + (points[i + 1] - points[i]) / 3.
         handles[1, i, :] = points[i + 1] + (points[i] - points[i + 1]) / 3.
     return handles
 
 def is_path_closed(points):
-    return linalg.norm(points[0] - points[-1]) <= ZERO_TOLERANCE
+    return scipy.linalg.norm(points[0] - points[-1]) <= ZERO_TOLERANCE
 
 def get_smooth_handles(points):
     """Get handles for a smooth bezier curve spline
@@ -194,8 +180,8 @@ def get_smooth_handles(points):
     count = len(points) - 1
     dim = points.shape[1]
     is_closed = is_path_closed(points)
-    A = np.zeros((2 * count, 2 * count))
-    B = np.zeros((2 * count, dim))
+    A = numpy.zeros((2 * count, 2 * count))
+    B = numpy.zeros((2 * count, dim))
     # First row
     if is_closed: # Eq 2
         A[0, [-2, -1, 0, 1]] = [1, -2, 2, -1]
@@ -219,16 +205,40 @@ def get_smooth_handles(points):
         B[-1] = points[-1]
     # Solving: A * X = B
     if is_closed: # Solve as whole matrix
-        X = linalg.solve(A, B)
+        X = scipy.linalg.solve(A, B)
     else: # Solve as banded matrix
         l, u = 2, 1
-        AB = np.zeros((l + u + 1, 2 * count))
-        AB[0, 1:] = np.diag(A, 1)
-        AB[1] = np.diag(A)
-        AB[2, :-1] = np.diag(A, -1)
-        AB[3, :-2] = np.diag(A, -2)
-        X = linalg.solve_banded((l,u), AB, B)
+        AB = numpy.zeros((l + u + 1, 2 * count))
+        AB[0, 1:] = numpy.diag(A, 1)
+        AB[1] = numpy.diag(A)
+        AB[2, :-1] = numpy.diag(A, -1)
+        AB[3, :-2] = numpy.diag(A, -2)
+        X = scipy.linalg.solve_banded((l,u), AB, B)
     # Parse results
     P1s = X[0::2]
     P2s = X[1::2]
-    return np.array([P1s, P2s])
+    return numpy.array([P1s, P2s])
+
+def calc_bezier(points, t):
+    n = len(points) - 1
+    result = numpy.zeros(points.shape[1])
+    for i,v in enumerate(points):
+        result += scipy.misc.comb(n,i) * (t**i) * ((1-t)**(n-i)) * v
+    return result
+
+def split_bezier(points, a, b):
+    """Split a bezier curve for [a, b]
+    
+    Sources:
+    https://pomax.github.io/bezierinfo/#splitting
+    https://github.com/3b1b/manim/blob/master/helpers.py
+        ~ partial_bezier_points
+    """
+    a_to_1 = numpy.array([
+        calc_bezier(points[i:], a)
+        for i in range(len(points))
+    ])
+    return numpy.array([
+        calc_bezier(a_to_1[:i+1], (b-a)/(1.-a))
+        for i in range(len(points))
+    ])

@@ -1,5 +1,5 @@
 import aggdraw
-import numpy as np
+import numpy
 
 import helpers
 import shape
@@ -118,12 +118,9 @@ class BezierCurve(Symbol):
     }
     
     def __init__(self, p0, p1, p2, p3, **kwargs):
-        for p in [p0, p1, p2, p3]:
-            assert isinstance(p, tuple), "Must provide points as tuples"
-            assert len(p) == 2, "Must provide pairs of points"
-            for v in p:
-                assert helpers.is_number(v), "Must provide coordinates as numbers"
-        helpers.handle_config(self, kwargs, dict(anchors=[p0, p1, p2, p3]))
+        anchors = helpers.validate_points(p0, p1, p2, p3)
+        assert anchors.shape[0] == 4, "You can only supply four points"
+        helpers.handle_config(self, kwargs, dict(anchors=anchors))
         Symbol.__init__(self, "", **kwargs)
     
     def draw_self(self, canvas, pen, brush):
@@ -137,7 +134,7 @@ class BezierCurve(Symbol):
         return path
     
     def update_symbol(self):
-        self.drawn = helpers.slice_curve(self.slice_pos, *self.anchors)
+        self.drawn = helpers.split_bezier(self.anchors, 0, self.slice_pos)
         Symbol.update_symbol(self)
     
     def slice(self, t):
@@ -161,7 +158,7 @@ class Polyline(Symbol):
     def path_string(self):
         path = "M {} {}".format(self.points[0, 0], self.points[0, 1])
         for i in range(self.handles.shape[1]):
-            triplet = np.array([self.handles[0, i, :], self.handles[1, i, :],
+            triplet = numpy.array([self.handles[0, i, :], self.handles[1, i, :],
                                 self.points[i + 1, :]])
             path += " C {} {}, {} {}, {} {}".format(*triplet.flatten())
         if helpers.is_path_closed(self.points):

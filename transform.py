@@ -1,7 +1,7 @@
 from copy import deepcopy
 import math
 
-import numpy as np
+import numpy
 
 import helpers
 
@@ -21,7 +21,7 @@ class Transform(object):
         for v in [a,b,c,d,e,f]:
             assert helpers.is_number(v), "Parameters must be numbers"
         # Setup matrix
-        self.matrix = np.array([[a, b, c], [d, e, f], [0., 0., 1.]])
+        self.matrix = numpy.array([[a, b, c], [d, e, f], [0., 0., 1.]])
     
     def __str__(self):
         return "{{Transform: [{}, {}, {}, {}, {}, {}]}}".format(
@@ -50,7 +50,7 @@ class Transform(object):
     
     def apply(self, x, y):
         """Apply the matrix to a point"""
-        point = self.matrix.dot(np.array([[x], [y], [1]]))
+        point = self.matrix.dot(numpy.array([[x], [y], [1]]))
         return (point[0], point[1])
     
     def combine(self, other):
@@ -67,8 +67,8 @@ class Transform(object):
         """Apply the transformation to another transformation/point"""
         if isinstance(other, Transform):
             return Transform(*self.matrix.dot(other.matrix).flatten()[0:6])
-        if isinstance(other, np.ndarray) and other.shape == (2,):
-            return self.matrix.dot(np.append(other, [1]))[0:2]
+        if isinstance(other, numpy.ndarray) and other.shape == (2,):
+            return self.matrix.dot(numpy.append(other, [1]))[0:2]
         if isinstance(other, tuple) and len(other) == 2:
             return self.apply(*other)
         raise TypeError("Unsupported type")
@@ -84,22 +84,22 @@ class Transform(object):
         return Transform(1, 0, dx, 0, 1, dy)
     
     def set_shift(self, dx, dy):
-        self.matrix[0:2, 2] = np.array([dx, dy])
+        self.matrix[0:2, 2] = numpy.array([dx, dy])
         return self
     
     def shift(self, ddx, ddy):
-        self.matrix[0:2, 2] += np.array([ddx, ddy])
+        self.matrix[0:2, 2] += numpy.array([ddx, ddy])
         return self
     
     @staticmethod
     def SKEW_ABOUT(xcenter, ycenter, a, b, c, d):
         """Create a Skew transformation"""
-        offset = np.array([[0], [0]])
+        offset = numpy.array([[0], [0]])
         if xcenter != 0. or ycenter != 0.:
             # Compute the offset for unshift->transform->shift
-            center = np.array([[xcenter], [ycenter]])
-            offset = (np.identity(2, dtype=float)
-                      - np.array([[a, b], [c, d]])).dot(center)
+            center = numpy.array([[xcenter], [ycenter]])
+            offset = (numpy.identity(2, dtype=float)
+                      - numpy.array([[a, b], [c, d]])).dot(center)
         return Transform(a, b, offset[0, 0], c, d, offset[1, 0])
     
     def skew_about(self, xcenter, ycenter, a, b, c, d):
@@ -111,7 +111,7 @@ class Transform(object):
         return Transform.SKEW_ABOUT(0, 0, a, b, c, d)
     
     def set_skew(self, a, b, c, d):
-        self.matrix[0:2, 0:2] = np.array([[a, b], [c, d]])
+        self.matrix[0:2, 0:2] = numpy.array([[a, b], [c, d]])
         return self
     
     def skew(self, a, b, c, d):

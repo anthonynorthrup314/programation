@@ -1,9 +1,8 @@
 from copy import deepcopy
 
 import aggdraw
-import numpy as np
-from PIL import Image, ImageTk
-import Tkinter as tk
+import numpy
+import PIL.Image
 
 import helpers
 import shape
@@ -18,7 +17,7 @@ class Canvas(object):
     
     def __init__(self, **kwargs):
         helpers.handle_config(self, kwargs);
-        self.data = np.zeros((self.height, self.width, 3))
+        self.data = numpy.zeros((self.height, self.width, 3))
     
     def copy(self):
         return deepcopy(self)
@@ -39,7 +38,7 @@ class Canvas(object):
             assert isinstance(shape_, shape.Shape), \
                    "Can only draw shapes to a canvas"
         if background:
-            assert isinstance(background, np.ndarray), \
+            assert isinstance(background, numpy.ndarray), \
                    "Can only use a background stored as a numpy array"
             assert self.data.shape == background.shape, \
                    "Can only use a background of the same dimensions"
@@ -48,7 +47,7 @@ class Canvas(object):
         if background:
             self.data = background.copy()
         else:
-            self.data = np.zeros((self.height, self.width, 3))
+            self.data = numpy.zeros((self.height, self.width, 3))
         # Setup the image
         self.img = helpers.image_from_array(self.data)
         self.drawing = aggdraw.Draw(self.img)
@@ -60,7 +59,7 @@ class Canvas(object):
         self.drawing.flush()
         del self.hasTransform
         del self.drawing
-        self.data = np.array(self.img)
+        self.data = numpy.array(self.img)
         del self.img
     
     def set_transform(self, transform=None):

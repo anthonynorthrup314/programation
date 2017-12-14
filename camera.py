@@ -1,8 +1,8 @@
 import math
 
-import numpy as np
-from PIL import Image, ImageTk
-import Tkinter as tk
+import numpy
+import PIL.ImageTk
+import Tkinter
 
 import canvas
 import helpers
@@ -36,7 +36,7 @@ class Camera(object):
         """Show the frames in a tk window"""
         TkCamera(self, **kwargs)
 
-class TkCamera(tk.Tk):
+class TkCamera(Tkinter.Tk):
     """Tk window for displaying camera data"""
     
     CONFIG = {
@@ -52,14 +52,14 @@ class TkCamera(tk.Tk):
     def __init__(self, camera, **kwargs):
         width, height = camera.width, camera.height
         helpers.handle_config(self, kwargs, locals())
-        tk.Tk.__init__(self)
+        Tkinter.Tk.__init__(self)
         # Setup Tk
         w, h, p = self.width, self.height, self.padding
         self.geometry('{}x{}'.format(w + 2 * p, h + 2 * p))
         self.resizable(0, 0)
         self.bind("<Key>", self.cb_key)
         # Create canvas object
-        self.canvas = tk.Canvas(self, width=w, height=h)
+        self.canvas = Tkinter.Canvas(self, width=w, height=h)
         self.canvas.pack()
         # Display the first frame
         if len(self.camera.frames) > 0:
@@ -82,7 +82,7 @@ class TkCamera(tk.Tk):
                 self.camera.height):
             self.temp["img"] = self.temp["img"].resize((self.width,
                                                         self.height))
-        self.temp["imgP"] = ImageTk.PhotoImage(image=self.temp["img"])
+        self.temp["imgP"] = PIL.ImageTk.PhotoImage(image=self.temp["img"])
         # Add image to canvas
         self.temp["imgC"] = self.canvas.create_image(
             self.padding, self.padding, image = self.temp["imgP"],
