@@ -13,6 +13,7 @@ DEF_WIDTH = 640
 DEF_HEIGHT = 480
 DEF_FPS = 30
 ZERO_TOLERANCE = .1
+FFMPEG_BIN = "ffmpeg"
 
 def filter_locals(local_args):
     """Remove the usual local variables

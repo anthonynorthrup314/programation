@@ -17,7 +17,7 @@ class Canvas(object):
     
     def __init__(self, **kwargs):
         helpers.handle_config(self, kwargs);
-        self.data = numpy.zeros((self.height, self.width, 3))
+        self.data = numpy.zeros((self.height, self.width, 4))
     
     def copy(self):
         return deepcopy(self)
@@ -47,7 +47,7 @@ class Canvas(object):
         if background:
             self.data = background.copy()
         else:
-            self.data = numpy.zeros((self.height, self.width, 3))
+            self.data = numpy.zeros((self.height, self.width, 4))
         # Setup the image
         self.img = helpers.image_from_array(self.data)
         self.drawing = aggdraw.Draw(self.img)

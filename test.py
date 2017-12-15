@@ -1,3 +1,5 @@
+import sys
+
 from colour import Color
 
 import canvas
@@ -6,18 +8,20 @@ import helpers
 import shapes
 import transform
 
-def main():
+def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
+         render_preview=False, render_file=False,
+         render_filename="./files/output/test.mp4"):
     # Size
-    w, h = helpers.DEF_WIDTH, helpers.DEF_HEIGHT
+    w, h = render_width, render_height
     
     # Tests
     c = camera.Camera(width=w, height=h, loop_behavior="reverse")
     t = transform.Transform.IDENTITY().shift(w / 8, h / 8).rotate_about(
     		w / 2, h / 2, 180)
     pt = transform.Transform.RESIZE_ABOUT(w / 2, h / 2, 1., .5)
-    s = shapes.TestShapeChildren(stroke_color="red", stroke_width=2.,
-                          		 fill_color=Color("green"), transform=t,
-                          		 parent_transform=pt)
+    s = shapes.TestShapeChildren(width=w, height=h, stroke_color="red",
+                                 stroke_width=2., fill_color=Color("green"),
+                                 transform=t, parent_transform=pt)
     b1 = shapes.BezierCurve((0, 0), (0, h), (w, h), (w, 0),
                             stroke_color="#FF00FF", stroke_width=8.)
     b2 = shapes.BezierCurve((0, 0), (0, h), (w, h), (w, 0),
@@ -29,9 +33,7 @@ def main():
     s.add(b1, b2, b3)
     p = shapes.Polyline((w / 4, h / 4), (w / 2, 3 * h / 4), (3 * w / 4, h / 4),
                         (w / 4, h / 4), smooth=True, stroke_color="white")
-    for shape in s.flatten():
-        print shape
-    parts = helpers.DEF_FPS
+    parts = 30
     for i in range(0, parts + 1):
         f = 1. * i / parts
         f2 = 1. * (i + 1) / (parts + 1)
@@ -42,7 +44,55 @@ def main():
         p.points[0, :] = p.points[-1, :] = [w / 2 * f2, h / 2 * f2]
         p.update_symbol()
         c.capture_frame(s, p)
-    c.show()
+    if render_file:
+        c.write_to_file(render_filename, show_loop=True)
+    if render_preview:
+        c.show()
+
+def run_main():
+    # Parse arguments
+    args = {}
+    i = 1
+    while i < len(sys.argv):
+        arg = sys.argv[i]
+        next = None
+        if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-"):
+            next = sys.argv[i + 1]
+        if arg == "-p":
+            args["render_preview"] = True
+        elif arg == "-f":
+            args["render_file"] = True
+            if next is not None:
+                i += 1
+                args["render_filename"] = next
+        elif arg == "-size":
+            if next is None:
+                print "Must provide a size"
+                return
+            i += 1
+            if "x" in next:
+                size = map(lambda v:int(v), next.split("x"))[:2]
+            else:
+                height = int(next)
+                size = [int(height * 16 / 9), height]
+            print "Setting size to {} by {}".format(*size)
+            args["render_width"] = size[0]
+            args["render_height"] = size[1]
+        elif arg == "-h":
+            args["render_width"] = 1920
+            args["render_height"] = 1080
+            print "Setting size to 1080p"
+        elif arg == "-m":
+            args["render_width"] = 1280
+            args["render_height"] = 720
+            print "Setting size to 720p"
+        else:
+            print "Unknown parameter: {}".format(arg)
+            return
+        i += 1
+    if len(args) == 0:
+        args["render_preview"] = True
+    main(**args)
 
 if __name__ == "__main__":
-    main()
+    run_main()

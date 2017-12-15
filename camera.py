@@ -1,4 +1,6 @@
 import math
+import os
+import subprocess
 
 import numpy
 import PIL.ImageTk
@@ -24,17 +26,67 @@ class Camera(object):
         self.canvas = canvas.Canvas(**helpers.change_kwargs(
             self.canvas_config, width=self.width, height=self.height))
     
-    def capture_frame(self, *objects):
+    def capture_frame(self, *objects, **kwargs):
         """Create a new frame
         
         objects -- List of Shape objects to draw
         """
-        self.canvas.draw(*objects)
+        self.canvas.draw(*objects, **kwargs)
         self.frames.append(self.canvas.data)
     
     def show(self, **kwargs):
         """Show the frames in a tk window"""
         TkCamera(self, **kwargs)
+    
+    def write_to_file(self, filename, fps=helpers.DEF_FPS, show_loop=False):
+        """Save frames to a file
+        
+        Source:
+        http://zulko.github.io/blog/2013/09/27/
+            read-and-write-video-frames-in-python-using-ffmpeg/
+        """
+        assert isinstance(filename, str), "You must supply a valid filename"
+        assert filename[-4:] == ".mp4", "Can only save to an mp4"
+        assert isinstance(fps, int), "FPS can only be an integer"
+        assert fps > 0, "FPS must be positive"
+        absfile = os.path.abspath(filename)
+        filedir = os.path.dirname(absfile)
+        if not os.path.isdir(filedir):
+            os.makedirs(filedir)
+        command = [
+            helpers.FFMPEG_BIN,
+            "-y", # Overwrite
+            "-f", "rawvideo",
+            "-vcodec","rawvideo",
+            "-s", "{}x{}".format(self.width, self.height),
+            "-pix_fmt", "rgba",
+            "-r", str(fps),
+            "-i", "-", # From pipe
+            "-an", # No audio
+            "-vcodec", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-loglevel", "error",
+            absfile
+        ]
+        pipe = subprocess.Popen(command, stdin=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        if pipe is None:
+            raise IOError("Could not start FFMPEG with given parameters: " +
+                          command.join(" "))
+        try:
+            for frame in self.frames:
+                pipe.stdin.write(frame.tostring())
+            if show_loop == True and self.loop_behavior == "reverse":
+                for frame in reversed(self.frames):
+                    pipe.stdin.write(frame.tostring())
+        except IOError as e:
+            print pipe.communicate()[1]
+            raise IOError()
+        pipe.stdin.close()
+        if pipe.stderr is not None:
+            pipe.stderr.close()
+        pipe.wait()
+        print "Saved to '{}' successfully".format(filename)
 
 class TkCamera(Tkinter.Tk):
     """Tk window for displaying camera data"""
@@ -55,11 +107,11 @@ class TkCamera(Tkinter.Tk):
         Tkinter.Tk.__init__(self)
         # Setup Tk
         w, h, p = self.width, self.height, self.padding
-        self.geometry('{}x{}'.format(w + 2 * p, h + 2 * p))
+        self.geometry("{}x{}".format(w + 2 * p, h + 2 * p))
         self.resizable(0, 0)
         self.bind("<Key>", self.cb_key)
         # Create canvas object
-        self.canvas = Tkinter.Canvas(self, width=w, height=h)
+        self.canvas = Tkinter.Canvas(self, width=w, height=h, bg="black")
         self.canvas.pack()
         # Display the first frame
         if len(self.camera.frames) > 0:

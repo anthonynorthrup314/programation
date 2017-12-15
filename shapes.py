@@ -22,14 +22,15 @@ class TestShape(shape.Shape):
 class TestShapeChildren(shape.Shape):
     """Testing child shapes"""
     
-    def __init__(self, **kwargs):
+    def __init__(self, width=helpers.DEF_WIDTH, height=helpers.DEF_HEIGHT,
+                 **kwargs):
         shape.Shape.__init__(self, **kwargs)
         # Remove transform information from kwargs for children
         ckwargs = kwargs.copy()
         for key in ["transform", "parent_transform", "global_transform"]:
             ckwargs.pop(key, kwargs)
         # Create children
-        w,h = helpers.DEF_WIDTH, helpers.DEF_HEIGHT
+        w,h = width, height
         bounds = (0, 0, w, h)
         self.add(
             Line((0, 0), (w, h), **ckwargs),
