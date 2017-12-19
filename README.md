@@ -9,3 +9,14 @@ project (cited in source).
 ## Current State:
 
 ![Screenshot](Screenshot.png?raw=true "Screenshot")
+
+## Setup
+
+To preview you only need to have the python2 requirements installed. You can
+install them by running the following command:
+```
+> pip2 install --user -r requirements.txt
+```
+
+To save to a file, you will need to have [ffmpeg](https://www.ffmpeg.org/)
+installed.

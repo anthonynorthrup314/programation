@@ -1,0 +1,8 @@
+git+https://github.com/scottopell/aggdraw-64bits
+colour
+numpy
+opencv-python
+Pillow
+progressbar
+scipy
+tqdm
