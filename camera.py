@@ -1,5 +1,6 @@
 import math
 import os
+import shutil
 import subprocess
 
 import numpy
@@ -49,7 +50,10 @@ class Camera(object):
         assert filename[-4:] == ".mp4", "Can only save to an mp4"
         assert isinstance(fps, int), "FPS can only be an integer"
         assert fps > 0, "FPS must be positive"
+        print "Writing frames to temporary file"
         absfile = os.path.abspath(filename)
+        abspre, absext = os.path.splitext(absfile)
+        tempfile = abspre + ".temp" + absext
         filedir = os.path.dirname(absfile)
         if not os.path.isdir(filedir):
             os.makedirs(filedir)
@@ -65,8 +69,9 @@ class Camera(object):
             "-an", # No audio
             "-vcodec", "libx264",
             "-pix_fmt", "yuv420p",
+            "-crf", "17",
             "-loglevel", "error",
-            absfile
+            tempfile
         ]
         pipe = subprocess.Popen(command, stdin=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
@@ -86,6 +91,8 @@ class Camera(object):
         if pipe.stderr is not None:
             pipe.stderr.close()
         pipe.wait()
+        print "Renaming temporary file"
+        shutil.move(tempfile, absfile)
         print "Saved to '{}' successfully".format(filename)
 
 class TkCamera(Tkinter.Tk):
