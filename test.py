@@ -1,12 +1,15 @@
+import math
 import sys
 
 from colour import Color
+import numpy
 
 import canvas
 import camera
 import helpers
 import shapes
 import transform
+import vshapes
 
 def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
          render_preview=False, render_file=False,
@@ -33,6 +36,8 @@ def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
     s.add(b1, b2, b3)
     p = shapes.Polyline((w / 4, h / 4), (w / 2, 3 * h / 4), (3 * w / 4, h / 4),
                         (w / 4, h / 4), smooth=True, stroke_color="white")
+    rect = vshapes.Rectangle(width=w / 4, height=h / 4, fill_color="white")
+    rect
     parts = 30
     for i in range(0, parts + 1):
         f = 1. * i / parts
@@ -43,7 +48,10 @@ def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
                                                             1. * f2))
         p.points[0, :] = p.points[-1, :] = [w / 2 * f2, h / 2 * f2]
         p.update_symbol()
-        c.capture_frame(s, p)
+        rect.create_points().shift((w / 8, h / 8)).subdivide(8)\
+            .transform_nonlinear(lambda x, y: (x, y + 10 * math.sin(x * .5
+            + f * 2 * math.pi)), expanded=True).scale(.5)
+        c.capture_frame(s, p, rect)
     if render_file:
         c.write_to_file(render_filename, show_loop=True)
     if render_preview:

@@ -243,3 +243,9 @@ def split_bezier(points, a, b):
         calc_bezier(a_to_1[:i+1], (b-a)/(1.-a))
         for i in range(len(points))
     ])
+
+def interpolate(a, b, t):
+    return (1. - t) * a + t * b
+
+def expand(v, f, **kwargs):
+    return f(*v, **kwargs)
