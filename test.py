@@ -1,10 +1,7 @@
-import math
 import sys
 
 from colour import Color
-import numpy
 
-import canvas
 import camera
 import helpers
 import shapes
@@ -16,11 +13,11 @@ def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
          render_filename="./files/output/test.mp4"):
     # Size
     w, h = render_width, render_height
-    
+
     # Tests
     c = camera.Camera(width=w, height=h, loop_behavior="reverse")
     t = transform.Transform.IDENTITY().shift(w / 8, h / 8).rotate_about(
-    		w / 2, h / 2, 180)
+    	   w / 2, h / 2, 180)
     pt = transform.Transform.RESIZE_ABOUT(w / 2, h / 2, 1., .5)
     s = shapes.TestShapeChildren(width=w, height=h, stroke_color="red",
                                  stroke_width=2., fill_color=Color("green"),
@@ -37,7 +34,6 @@ def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
     p = shapes.Polyline((w / 4, h / 4), (w / 2, 3 * h / 4), (3 * w / 4, h / 4),
                         (w / 4, h / 4), smooth=True, stroke_color="white")
     rect = vshapes.Rectangle(width=w / 4, height=h / 4, fill_color="white")
-    rect
     parts = 30
     for i in range(0, parts + 1):
         f = 1. * i / parts
@@ -49,8 +45,8 @@ def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
         p.points[0, :] = p.points[-1, :] = [w / 2 * f2, h / 2 * f2]
         p.update_symbol()
         rect.create_points().shift((w / 8, h / 8)).subdivide(8)\
-            .transform_nonlinear(lambda x, y: (x, y + 10 * math.sin(x * .5
-            + f * 2 * math.pi)), expanded=True).scale(.5)
+            .transform_nonlinear(helpers.wave_func, [f], expanded=True)\
+            .scale(.5)
         c.capture_frame(s, p, rect)
     if render_file:
         c.write_to_file(render_filename, show_loop=True)
@@ -63,25 +59,25 @@ def run_main():
     i = 1
     while i < len(sys.argv):
         arg = sys.argv[i]
-        next = None
+        nextArg = None
         if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-"):
-            next = sys.argv[i + 1]
+            nextArg = sys.argv[i + 1]
         if arg == "-p":
             args["render_preview"] = True
         elif arg == "-f":
             args["render_file"] = True
-            if next is not None:
+            if nextArg is not None:
                 i += 1
-                args["render_filename"] = next
+                args["render_filename"] = nextArg
         elif arg == "-size":
-            if next is None:
+            if nextArg is None:
                 print "Must provide a size"
                 return
             i += 1
-            if "x" in next:
-                size = map(lambda v:int(v), next.split("x"))[:2]
+            if "x" in nextArg:
+                size = map(int, nextArg.split("x"))[:2]
             else:
-                height = int(next)
+                height = int(nextArg)
                 size = [int(height * 16 / 9), height]
             print "Setting size to {} by {}".format(*size)
             args["render_width"] = size[0]
@@ -98,7 +94,7 @@ def run_main():
             print "Unknown parameter: {}".format(arg)
             return
         i += 1
-    if len(args) == 0:
+    if not args:
         args["render_preview"] = True
     main(**args)
 

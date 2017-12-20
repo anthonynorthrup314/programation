@@ -3,7 +3,8 @@ import math
 from colour import Color
 import numpy
 import PIL.Image
-import scipy.linalg, scipy.misc
+import scipy.linalg
+import scipy.misc
 
 # Some helpers copied from 3B1B's Manim project
 # https://github.com/3b1b/manim
@@ -17,9 +18,11 @@ FFMPEG_BIN = "ffmpeg"
 
 def filter_locals(local_args):
     """Remove the usual local variables
-    
+
     Source: manim
     """
+    if local_args is None:
+        return dict()
     excluded = ["self", "kwargs"]
     result = local_args.copy()
     for key in excluded:
@@ -28,7 +31,7 @@ def filter_locals(local_args):
 
 def combine_configs(configs):
     """Combine configurations, first appearence takes priority
-    
+
     Source: manim
     """
     all_items = list()
@@ -42,18 +45,18 @@ def combine_configs(configs):
         else:
             # Combine two child configs
             if isinstance(value, dict) and isinstance(config[key], dict):
-                config[key] = combine_configs(config[key], value)
+                config[key] = combine_configs([config[key], value])
     return config
 
-def handle_config(self, kwargs, local_args={}):
+def handle_config(self, kwargs, local_args=None):
     """Set up object variables based on configs
-    
+
     Source: manim
     """
     # Get all superclass configurations
     superclasses = [self.__class__]
     configs = list()
-    while len(superclasses) > 0:
+    while any(superclasses):
         superclass = superclasses.pop()
         superclasses += superclass.__bases__
         if hasattr(superclass, "CONFIG"):
@@ -66,7 +69,7 @@ def handle_config(self, kwargs, local_args={}):
 def change_kwargs(kwargs, **changes):
     """Modify an existing kwargs object"""
     result = kwargs.copy()
-    for key,value in changes.items():
+    for key, value in changes.items():
         result[key] = value
     return result
 
@@ -74,7 +77,7 @@ def is_number(val):
     """Return if a value is a number"""
     try:
         return not math.isnan(float(val))
-    except:
+    except ValueError:
         return False
     return True
 
@@ -86,7 +89,7 @@ def rotation_matrix(angle):
     """Compute the usual rotation matrix"""
     angle = degtorad(angle)
     return numpy.array([[math.cos(angle), -math.sin(angle)],
-                      [math.sin(angle), math.cos(angle)]])
+                        [math.sin(angle), math.cos(angle)]])
 
 def image_from_array(data):
     """Convert a numpy array to a PIL image"""
@@ -95,13 +98,13 @@ def image_from_array(data):
 def to_color(col):
     """Convert different color representations to a Color object"""
     try:
-        if col == None:
+        if col is None:
             return col
         if isinstance(col, Color):
             return col
         if isinstance(col, str):
             return Color(col)
-        if isinstance(col, tuple) or isinstance(col, list):
+        if isinstance(col, (tuple, list)):
             if len(col) == 3:
                 return Color(rgb=col)
             if len(col) == 4:
@@ -117,7 +120,7 @@ def to_color(col):
             return Color(**col)
         raise ValueError()
     except ValueError as e:
-        if len(e.args) > 0:
+        if e.args:
             raise e
         raise ValueError("Invalid color format: {}".format(col))
 
@@ -135,8 +138,8 @@ def validate_bounds(bounds):
         if bounds[0] == bounds[2] or bounds[1] == bounds[3]:
             raise ValueError("Bounds must have non-zero size")
         return bounds
-    except e:
-        if len(e.args) > 0:
+    except ValueError as e:
+        if e.args:
             raise e
         raise ValueError("Bounds must be a list of 4 numbers")
 
@@ -150,8 +153,8 @@ def validate_points(*points):
         if len(points.shape) != 2 or points.shape[1] != 2:
             raise ValueError("")
         return points
-    except e:
-        if len(e.args) > 0:
+    except ValueError as e:
+        if e.args:
             raise e
         raise ValueError("Points must be a list of number pairs")
 
@@ -171,7 +174,7 @@ def is_path_closed(points):
 
 def get_smooth_handles(points):
     """Get handles for a smooth bezier curve spline
-    
+
     Sources:
     https://www.particleincell.com/2012/bezier-splines/
         ~ Equations referenced
@@ -199,7 +202,7 @@ def get_smooth_handles(points):
         A[j + 1, j - 1 : j + 3] = [1, -2, 2, -1]
     # Last row
     if is_closed: # Eq 1
-        A[-1,[-1, 0]] = [1, 1]
+        A[-1, [-1, 0]] = [1, 1]
         B[-1] = 2 * points[0]
     else: # Eq 4
         A[-1, -2:] = [-1, 2]
@@ -214,7 +217,8 @@ def get_smooth_handles(points):
         AB[1] = numpy.diag(A)
         AB[2, :-1] = numpy.diag(A, -1)
         AB[3, :-2] = numpy.diag(A, -2)
-        X = scipy.linalg.solve_banded((l,u), AB, B)
+        # pylint: disable=no-member
+        X = scipy.linalg.solve_banded((l, u), AB, B)
     # Parse results
     P1s = X[0::2]
     P2s = X[1::2]
@@ -223,13 +227,13 @@ def get_smooth_handles(points):
 def calc_bezier(points, t):
     n = len(points) - 1
     result = numpy.zeros(points.shape[1])
-    for i,v in enumerate(points):
-        result += scipy.misc.comb(n,i) * (t**i) * ((1-t)**(n-i)) * v
+    for i, v in enumerate(points):
+        result += scipy.misc.comb(n, i) * (t**i) * ((1-t)**(n-i)) * v
     return result
 
 def split_bezier(points, a, b):
     """Split a bezier curve for [a, b]
-    
+
     Sources:
     https://pomax.github.io/bezierinfo/#splitting
     https://github.com/3b1b/manim/blob/master/helpers.py
@@ -247,5 +251,8 @@ def split_bezier(points, a, b):
 def interpolate(a, b, t):
     return (1. - t) * a + t * b
 
-def expand(v, f, **kwargs):
-    return f(*v, **kwargs)
+def expand(v, f, *args, **kwargs):
+    return f(*(v.tolist() + list(args)), **kwargs)
+
+def wave_func(x, y, f):
+    return (x, y + 10 * math.sin(x * .5 + f * 2 * math.pi))

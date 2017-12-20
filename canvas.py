@@ -1,32 +1,37 @@
 from copy import deepcopy
 
-import aggdraw
 import numpy
-import PIL.Image
+
+import aggdraw
 
 import helpers
 import shape
 
 class Canvas(object):
     """Handles the drawing of Shapes"""
-    
+
     CONFIG = {
         "width": helpers.DEF_WIDTH,
-        "height": helpers.DEF_HEIGHT,
+        "height": helpers.DEF_HEIGHT
     }
-    
+
     def __init__(self, **kwargs):
-        helpers.handle_config(self, kwargs);
+        self.width = Canvas.CONFIG["width"]
+        self.height = Canvas.CONFIG["height"]
+
+        self.drawing = self.hasTransform = self.img = False
+
+        helpers.handle_config(self, kwargs)
         self.data = numpy.zeros((self.height, self.width, 4))
-    
+
     def copy(self):
         return deepcopy(self)
-    
+
     def draw(self, *shapes_, **kwargs):
         """Draw a list of shapes to the internal pixel data array
-        
+
         shapes_ -- List of Shape objects to draw
-        
+
         Keyword arguments:
         background -- Previous frame to draw on instead of on a black
                       background
@@ -42,7 +47,7 @@ class Canvas(object):
                    "Can only use a background stored as a numpy array"
             assert self.data.shape == background.shape, \
                    "Can only use a background of the same dimensions"
-        assert len(kwargs) == 0, "Only supported keyword is 'background'"
+        assert not kwargs, "Only supported keyword is 'background'"
         # Handle background
         if background:
             self.data = background.copy()
@@ -61,7 +66,7 @@ class Canvas(object):
         del self.drawing
         self.data = numpy.array(self.img)
         del self.img
-    
+
     def set_transform(self, transform=None):
         """Setup the aggdraw transformation"""
         # Remove previous transform

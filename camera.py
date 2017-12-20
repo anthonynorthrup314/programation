@@ -2,18 +2,16 @@ import math
 import os
 import shutil
 import subprocess
-
-import numpy
-import PIL.ImageTk
 import Tkinter
+
+import PIL.ImageTk
 
 import canvas
 import helpers
-import shape
 
 class Camera(object):
     """Controls multi-frame capture/display"""
-    
+
     CONFIG = {
         "width": helpers.DEF_WIDTH,
         "height": helpers.DEF_HEIGHT,
@@ -21,27 +19,33 @@ class Camera(object):
         "loop_behavior": "loop", # Possible values: once, loop, reverse
         "canvas_config": {}
     }
-    
+
     def __init__(self, **kwargs):
+        self.width = Camera.CONFIG["width"]
+        self.height = Camera.CONFIG["height"]
+        self.frames = Camera.CONFIG["frames"]
+        self.loop_behavior = Camera.CONFIG["loop_behavior"]
+        self.canvas_config = Camera.CONFIG["canvas_config"]
+
         helpers.handle_config(self, kwargs)
         self.canvas = canvas.Canvas(**helpers.change_kwargs(
             self.canvas_config, width=self.width, height=self.height))
-    
+
     def capture_frame(self, *objects, **kwargs):
         """Create a new frame
-        
+
         objects -- List of Shape objects to draw
         """
         self.canvas.draw(*objects, **kwargs)
         self.frames.append(self.canvas.data)
-    
+
     def show(self, **kwargs):
         """Show the frames in a tk window"""
         TkCamera(self, **kwargs)
-    
+
     def write_to_file(self, filename, fps=helpers.DEF_FPS, show_loop=False):
         """Save frames to a file
-        
+
         Source:
         http://zulko.github.io/blog/2013/09/27/
             read-and-write-video-frames-in-python-using-ffmpeg/
@@ -61,7 +65,7 @@ class Camera(object):
             helpers.FFMPEG_BIN,
             "-y", # Overwrite
             "-f", "rawvideo",
-            "-vcodec","rawvideo",
+            "-vcodec", "rawvideo",
             "-s", "{}x{}".format(self.width, self.height),
             "-pix_fmt", "rgba",
             "-r", str(fps),
@@ -77,14 +81,14 @@ class Camera(object):
                                 stderr=subprocess.PIPE)
         if pipe is None:
             raise IOError("Could not start FFMPEG with given parameters: " +
-                          command.join(" "))
+                          " ".join(command))
         try:
             for frame in self.frames:
                 pipe.stdin.write(frame.tostring())
-            if show_loop == True and self.loop_behavior == "reverse":
+            if show_loop is True and self.loop_behavior == "reverse":
                 for frame in reversed(self.frames):
                     pipe.stdin.write(frame.tostring())
-        except IOError as e:
+        except IOError:
             print pipe.communicate()[1]
             raise IOError()
         pipe.stdin.close()
@@ -97,7 +101,7 @@ class Camera(object):
 
 class TkCamera(Tkinter.Tk):
     """Tk window for displaying camera data"""
-    
+
     CONFIG = {
         "fps": helpers.DEF_FPS,
         "paused": False,
@@ -107,10 +111,19 @@ class TkCamera(Tkinter.Tk):
         "padding": 1,
         "temp": {}
     }
-    
+
     def __init__(self, camera, **kwargs):
-        width, height = camera.width, camera.height
-        helpers.handle_config(self, kwargs, locals())
+        self.fps = TkCamera.CONFIG["fps"]
+        self.paused = TkCamera.CONFIG["paused"]
+        self.do_step = TkCamera.CONFIG["do_step"]
+        self.frame = TkCamera.CONFIG["frame"]
+        self.frame_speed = TkCamera.CONFIG["frame_speed"]
+        self.padding = TkCamera.CONFIG["padding"]
+        self.temp = TkCamera.CONFIG["temp"]
+        
+        helpers.handle_config(self, kwargs, dict(camera=camera,
+                                                 height=camera.height,
+                                                 width=camera.width))
         Tkinter.Tk.__init__(self)
         # Setup Tk
         w, h, p = self.width, self.height, self.padding
@@ -121,7 +134,7 @@ class TkCamera(Tkinter.Tk):
         self.canvas = Tkinter.Canvas(self, width=w, height=h, bg="black")
         self.canvas.pack()
         # Display the first frame
-        if len(self.camera.frames) > 0:
+        if self.camera.frames:
             self.update_frame()
         # Don't animate without multiple frames
         if len(self.camera.frames) < 2:
@@ -129,7 +142,7 @@ class TkCamera(Tkinter.Tk):
         # Run loop
         self.step()
         self.mainloop()
-    
+
     def update_frame(self):
         """Display the current frame"""
         # Clear previous frame
@@ -138,21 +151,20 @@ class TkCamera(Tkinter.Tk):
         data = self.camera.frames[self.frame]
         self.temp["img"] = helpers.image_from_array(data)
         if (self.width, self.height) != (self.camera.width,
-                self.camera.height):
+                                         self.camera.height):
             self.temp["img"] = self.temp["img"].resize((self.width,
                                                         self.height))
         self.temp["imgP"] = PIL.ImageTk.PhotoImage(image=self.temp["img"])
         # Add image to canvas
         self.temp["imgC"] = self.canvas.create_image(
-            self.padding, self.padding, image = self.temp["imgP"],
-            anchor = "nw")
+            self.padding, self.padding, image=self.temp["imgP"], anchor="nw")
         # Add paused notice
         if self.paused:
             self.temp["paused"] = self.canvas.create_text(
-                self.padding, self.padding, text = "PAUSED {}/{}".format(
-                    self.frame + 1, len(self.camera.frames)), fill = "#FFFFFF",
-                    anchor = "nw")
-    
+                self.padding, self.padding, text="PAUSED {}/{}".format(
+                    self.frame + 1, len(self.camera.frames)), fill="#FFFFFF",
+                anchor="nw")
+
     def step(self):
         """Handle changing frames"""
         # Handle animation end
@@ -192,11 +204,11 @@ class TkCamera(Tkinter.Tk):
         # Call step again later
         delay = int(math.ceil(1000. / self.fps)) if self.fps != 0 else 1
         self.after(delay, self.step)
-    
+
     def cb_key(self, event):
         """Callback for key events"""
         key = event.keysym.lower()
-        is_lower = key == event.keysym
+        # is_lower = key == event.keysym
         if key == "escape":
             self.destroy()
         elif key == "p":
