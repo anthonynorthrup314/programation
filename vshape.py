@@ -109,8 +109,7 @@ class VShape(shape.Shape):
         return self
 
     def interpolate(self, other, alpha=.5):
-        # pylint: disable=unused-argument
-        #TODO
+        self.points = (1. - alpha) * self.points + alpha * other.points
         return self
 
     ## Point Information ##
