@@ -120,7 +120,7 @@ class TkCamera(Tkinter.Tk):
         self.frame_speed = TkCamera.CONFIG["frame_speed"]
         self.padding = TkCamera.CONFIG["padding"]
         self.temp = TkCamera.CONFIG["temp"]
-        
+
         helpers.handle_config(self, kwargs, dict(camera=camera,
                                                  height=camera.height,
                                                  width=camera.width))

@@ -19,5 +19,5 @@ class Rectangle(vshape.VShape):
 
     def create_points(self):
         self.set_anchors([(0, 0), (0, self.height), (self.width, self.height),
-            (self.width, 0)], smooth=False)
+                          (self.width, 0)], smooth=False)
         return self
