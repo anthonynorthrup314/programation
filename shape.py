@@ -18,23 +18,12 @@ class Shape(object):
         "stroke_alpha": 1.,
         "fill_color": None,
         "fill_alpha": 1.,
-        "transform": transform.Transform.IDENTITY(),
+        "transform_": transform.Transform.IDENTITY(),
         "parent_transform": None,
         "global_transform": None,
     }
 
     def __init__(self, **kwargs):
-        self.name = Shape.CONFIG["name"]
-        self.children = Shape.CONFIG["children"]
-        self.stroke_color = Shape.CONFIG["stroke_color"]
-        self.stroke_width = Shape.CONFIG["stroke_width"]
-        self.stroke_alpha = Shape.CONFIG["stroke_alpha"]
-        self.fill_color = Shape.CONFIG["fill_color"]
-        self.fill_alpha = Shape.CONFIG["fill_alpha"]
-        self.transform = Shape.CONFIG["transform"]
-        self.parent_transform = Shape.CONFIG["parent_transform"]
-        self.global_transform = Shape.CONFIG["global_transform"]
-
         self.brush = self.pen = None
 
         helpers.handle_config(self, kwargs)
@@ -133,8 +122,9 @@ class Shape(object):
         if parent_transform is False:
             parent_transform = self.parent_transform
         self.parent_transform = parent_transform
-        if self.transform:
-            self.global_transform = self.transform.copy()
+        if self.transform_:
+            # pylint: disable=no-member
+            self.global_transform = self.transform_.copy()
             if self.parent_transform:
                 self.global_transform.merge(self.parent_transform)
         else:

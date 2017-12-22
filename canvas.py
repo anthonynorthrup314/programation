@@ -16,9 +16,6 @@ class Canvas(object):
     }
 
     def __init__(self, **kwargs):
-        self.width = Canvas.CONFIG["width"]
-        self.height = Canvas.CONFIG["height"]
-
         self.drawing = self.hasTransform = self.img = False
 
         helpers.handle_config(self, kwargs)

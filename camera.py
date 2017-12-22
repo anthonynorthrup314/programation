@@ -21,12 +21,6 @@ class Camera(object):
     }
 
     def __init__(self, **kwargs):
-        self.width = Camera.CONFIG["width"]
-        self.height = Camera.CONFIG["height"]
-        self.frames = Camera.CONFIG["frames"]
-        self.loop_behavior = Camera.CONFIG["loop_behavior"]
-        self.canvas_config = Camera.CONFIG["canvas_config"]
-
         helpers.handle_config(self, kwargs)
         self.canvas = canvas.Canvas(**helpers.change_kwargs(
             self.canvas_config, width=self.width, height=self.height))
@@ -113,14 +107,6 @@ class TkCamera(Tkinter.Tk):
     }
 
     def __init__(self, camera, **kwargs):
-        self.fps = TkCamera.CONFIG["fps"]
-        self.paused = TkCamera.CONFIG["paused"]
-        self.do_step = TkCamera.CONFIG["do_step"]
-        self.frame = TkCamera.CONFIG["frame"]
-        self.frame_speed = TkCamera.CONFIG["frame_speed"]
-        self.padding = TkCamera.CONFIG["padding"]
-        self.temp = TkCamera.CONFIG["temp"]
-
         helpers.handle_config(self, kwargs, dict(camera=camera,
                                                  height=camera.height,
                                                  width=camera.width))

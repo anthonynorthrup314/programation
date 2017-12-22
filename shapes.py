@@ -125,16 +125,12 @@ class BezierCurve(Symbol):
     }
 
     def __init__(self, p0, p1, p2, p3, **kwargs):
-        self.slice_pos = BezierCurve.CONFIG["slice_pos"]
-        self.close_path = BezierCurve.CONFIG["close_path"]
-
         anchors = helpers.validate_points(p0, p1, p2, p3)
         assert anchors.shape[0] == 4, "You can only supply four points"
         self.anchors = anchors
 
         helpers.handle_config(self, kwargs)
-        Symbol.__init__(self, "", **helpers.change_kwargs(BezierCurve.CONFIG,
-                                                          **kwargs))
+        Symbol.__init__(self, "", **kwargs)
 
     def draw_self(self, canvas, pen, brush):
         if self.slice_pos != 0.:
@@ -164,19 +160,16 @@ class Polyline(Symbol):
     }
 
     def __init__(self, *points, **kwargs):
-        self.smooth = Polyline.CONFIG["smooth"]
-        self.smooth_factor = Polyline.CONFIG["smooth_factor"]
-
-        self.handles = None
-
         points = helpers.validate_points(*points)
         self.points = points
+        self.handles = None
 
         helpers.handle_config(self, kwargs)
-        Symbol.__init__(self, "", **helpers.change_kwargs(Polyline.CONFIG,
-                                                          **kwargs))
+        Symbol.__init__(self, "", **kwargs)
 
     def path_string(self):
+        if self.handles is None:
+            return ""
         path = "M {} {}".format(self.points[0, 0], self.points[0, 1])
         for i in range(self.handles.shape[1]):
             triplet = numpy.array([self.handles[0, i, :],

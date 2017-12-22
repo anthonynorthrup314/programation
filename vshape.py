@@ -14,14 +14,9 @@ class VShape(shape.Shape):
     }
 
     def __init__(self, **kwargs):
-        self.dim = VShape.CONFIG["dim"]
-        self.make_closed = VShape.CONFIG["make_closed"]
-
-        self.points = numpy.zeros((0, self.dim))
-
         helpers.handle_config(self, kwargs)
-        shape.Shape.__init__(self, **helpers.change_kwargs(VShape.CONFIG,
-                                                           **kwargs))
+        shape.Shape.__init__(self, **kwargs)
+        self.points = numpy.zeros((0, self.dim))
         self.create_points()
 
     def draw_self(self, canvas, pen, brush):
@@ -42,7 +37,6 @@ class VShape(shape.Shape):
 
     def create_points(self):
         # For sub classes
-        self.points = numpy.zeros((0, self.dim))
         return self
 
     def set_points(self, anchors, handles0, handles1):

@@ -10,8 +10,7 @@ class Rectangle(vshape.VShape):
 
     def __init__(self, **kwargs):
         helpers.handle_config(self, kwargs)
-        vshape.VShape.__init__(self, **helpers.change_kwargs(Rectangle.CONFIG,
-                                                             **kwargs))
+        vshape.VShape.__init__(self, **kwargs)
 
     def create_points(self):
         self.set_anchors([(0, 0), (0, self.height), (self.width, self.height),
