@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import numpy
 
-import programmation.helpers as helpers
+import programation.helpers as helpers
 
 
 class Transform(object):

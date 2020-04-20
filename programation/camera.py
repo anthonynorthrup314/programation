@@ -6,8 +6,8 @@ import tkinter
 
 import PIL.ImageTk
 
-import programmation.canvas as canvas
-import programmation.helpers as helpers
+import programation.canvas as canvas
+import programation.helpers as helpers
 
 
 class Camera(object):

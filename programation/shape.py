@@ -5,8 +5,8 @@ from colour import Color
 import aggdraw
 import functools
 
-import programmation.helpers as helpers
-import programmation.transform as transform
+import programation.helpers as helpers
+import programation.transform as transform
 
 
 class Shape(object):

@@ -1,5 +1,5 @@
-import programmation.helpers as helpers
-import programmation.vshape as vshape
+import programation.helpers as helpers
+import programation.vshape as vshape
 
 
 class Rectangle(vshape.VShape):

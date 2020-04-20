@@ -4,8 +4,8 @@ import numpy
 
 import aggdraw
 
-import programmation.helpers as helpers
-import programmation.shape as shape
+import programation.helpers as helpers
+import programation.shape as shape
 
 
 class Canvas(object):

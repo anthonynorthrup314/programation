@@ -2,11 +2,11 @@ import sys
 
 from colour import Color
 
-import programmation.camera as camera
-import programmation.helpers as helpers
-import programmation.shapes as shapes
-import programmation.transform as transform
-import programmation.vshapes as vshapes
+import programation.camera as camera
+import programation.helpers as helpers
+import programation.shapes as shapes
+import programation.transform as transform
+import programation.vshapes as vshapes
 
 
 def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
