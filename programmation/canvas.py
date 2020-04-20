@@ -4,8 +4,9 @@ import numpy
 
 import aggdraw
 
-import helpers
-import shape
+import programmation.helpers as helpers
+import programmation.shape as shape
+
 
 class Canvas(object):
     """Handles the drawing of Shapes"""
@@ -38,12 +39,12 @@ class Canvas(object):
         # Verify input
         for shape_ in shapes_:
             assert isinstance(shape_, shape.Shape), \
-                   "Can only draw shapes to a canvas"
+                "Can only draw shapes to a canvas"
         if background:
             assert isinstance(background, numpy.ndarray), \
-                   "Can only use a background stored as a numpy array"
+                "Can only use a background stored as a numpy array"
             assert self.data.shape == background.shape, \
-                   "Can only use a background of the same dimensions"
+                "Can only use a background of the same dimensions"
         assert not kwargs, "Only supported keyword is 'background'"
         # Handle background
         if background:

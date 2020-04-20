@@ -2,11 +2,12 @@ import sys
 
 from colour import Color
 
-import camera
-import helpers
-import shapes
-import transform
-import vshapes
+import programmation.camera as camera
+import programmation.helpers as helpers
+import programmation.shapes as shapes
+import programmation.transform as transform
+import programmation.vshapes as vshapes
+
 
 def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
          render_preview=False, render_file=False,
@@ -17,7 +18,7 @@ def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
     # Tests
     c = camera.Camera(width=w, height=h, loop_behavior="reverse")
     t = transform.Transform.IDENTITY().shift(w / 8, h / 8).rotate_about(
-    	   w / 2, h / 2, 180)
+        w / 2, h / 2, 180)
     pt = transform.Transform.RESIZE_ABOUT(w / 2, h / 2, 1., .5)
     s = shapes.TestShapeChildren(width=w, height=h, stroke_color="red",
                                  stroke_width=2., fill_color=Color("green"),
@@ -53,6 +54,7 @@ def main(render_width=helpers.DEF_WIDTH, render_height=helpers.DEF_HEIGHT,
     if render_preview:
         c.show()
 
+
 def run_main():
     # Parse arguments
     args = {}
@@ -71,7 +73,7 @@ def run_main():
                 args["render_filename"] = nextArg
         elif arg == "-size":
             if nextArg is None:
-                print "Must provide a size"
+                print("Must provide a size")
                 return
             i += 1
             if "x" in nextArg:
@@ -79,24 +81,25 @@ def run_main():
             else:
                 height = int(nextArg)
                 size = [int(height * 16 / 9), height]
-            print "Setting size to {} by {}".format(*size)
+            print(f"Setting size to {size[0]} by {size[1]}")
             args["render_width"] = size[0]
             args["render_height"] = size[1]
         elif arg == "-h":
             args["render_width"] = 1920
             args["render_height"] = 1080
-            print "Setting size to 1080p"
+            print("Setting size to 1080p")
         elif arg == "-m":
             args["render_width"] = 1280
             args["render_height"] = 720
-            print "Setting size to 720p"
+            print("Setting size to 720p")
         else:
-            print "Unknown parameter: {}".format(arg)
+            print(f"Unknown parameter: {arg}")
             return
         i += 1
     if not args:
         args["render_preview"] = True
     main(**args)
+
 
 if __name__ == "__main__":
     run_main()

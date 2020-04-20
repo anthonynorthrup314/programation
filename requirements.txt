@@ -1,4 +1,4 @@
-git+https://github.com/scottopell/aggdraw-64bits
+aggdraw
 colour
 numpy
 opencv-python

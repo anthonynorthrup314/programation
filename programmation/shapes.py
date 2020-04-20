@@ -2,8 +2,9 @@ import numpy
 
 import aggdraw
 
-import helpers
-import shape
+import programmation.helpers as helpers
+import programmation.shape as shape
+
 
 class TestShape(shape.Shape):
     """Just has an example drawing"""
@@ -19,6 +20,7 @@ class TestShape(shape.Shape):
         s = aggdraw.Symbol("M {} {} C {} {}, {} {}, {} {} Z".format(
             w / 2, h / 2, 2 * w / 3, h / 3, 5 * w / 6, 2 * h / 3, w, h / 2))
         d.symbol((0, 0, w, h), s, pen, brush)
+
 
 class TestShapeChildren(shape.Shape):
     """Testing child shapes"""
@@ -44,6 +46,7 @@ class TestShapeChildren(shape.Shape):
                 h / 2), **ckwargs)
         )
 
+
 class BoundedShape(shape.Shape):
     """A shape with bounds"""
 
@@ -51,6 +54,7 @@ class BoundedShape(shape.Shape):
         self.bounds = helpers.validate_bounds(bounds)
         helpers.handle_config(self, kwargs)
         shape.Shape.__init__(self, **kwargs)
+
 
 class Line(BoundedShape):
     """Simple line"""
@@ -61,6 +65,7 @@ class Line(BoundedShape):
 
     def draw_self(self, canvas, pen, brush):
         canvas.drawing.line(self.bounds, pen)
+
 
 class SliceShape(BoundedShape):
     """Part of a circle"""
@@ -74,11 +79,13 @@ class SliceShape(BoundedShape):
         helpers.handle_config(self, kwargs, locals())
         BoundedShape.__init__(self, bounds, **kwargs)
 
+
 class Arc(SliceShape):
     """Simple arc"""
 
     def draw_self(self, canvas, pen, brush):
         canvas.drawing.arc(self.bounds, self.start_angle, self.end_angle, pen)
+
 
 class Chord(SliceShape):
     """Simple chord"""
@@ -87,12 +94,14 @@ class Chord(SliceShape):
         canvas.drawing.chord(self.bounds, self.start_angle, self.end_angle,
                              pen, brush)
 
+
 class PieSlice(SliceShape):
     """Simple pie slice"""
 
     def draw_self(self, canvas, pen, brush):
         canvas.drawing.pieslice(self.bounds, self.start_angle, self.end_angle,
                                 pen, brush)
+
 
 class Symbol(shape.Shape):
     """SVG path object"""
@@ -115,6 +124,7 @@ class Symbol(shape.Shape):
     def update_symbol(self):
         """Update the internal aggdraw Symbol object"""
         self.symbol = aggdraw.Symbol(self.path_string())
+
 
 class BezierCurve(Symbol):
     """A cubic bezier curve"""
@@ -150,6 +160,7 @@ class BezierCurve(Symbol):
         """Set the drawn curve to be a slice of the original"""
         self.slice_pos = t
         self.update_symbol()
+
 
 class Polyline(Symbol):
     """Multiple line segments"""

@@ -1,5 +1,6 @@
-import helpers
-import vshape
+import programmation.helpers as helpers
+import programmation.vshape as vshape
+
 
 class Rectangle(vshape.VShape):
     CONFIG = {

@@ -2,12 +2,13 @@ import math
 import os
 import shutil
 import subprocess
-import Tkinter
+import tkinter
 
 import PIL.ImageTk
 
-import canvas
-import helpers
+import programmation.canvas as canvas
+import programmation.helpers as helpers
+
 
 class Camera(object):
     """Controls multi-frame capture/display"""
@@ -16,7 +17,7 @@ class Camera(object):
         "width": helpers.DEF_WIDTH,
         "height": helpers.DEF_HEIGHT,
         "frames": [],
-        "loop_behavior": "loop", # Possible values: once, loop, reverse
+        "loop_behavior": "loop",  # Possible values: once, loop, reverse
         "canvas_config": {}
     }
 
@@ -48,7 +49,7 @@ class Camera(object):
         assert filename[-4:] == ".mp4", "Can only save to an mp4"
         assert isinstance(fps, int), "FPS can only be an integer"
         assert fps > 0, "FPS must be positive"
-        print "Writing frames to temporary file"
+        print("Writing frames to temporary file")
         absfile = os.path.abspath(filename)
         abspre, absext = os.path.splitext(absfile)
         tempfile = abspre + ".temp" + absext
@@ -57,14 +58,14 @@ class Camera(object):
             os.makedirs(filedir)
         command = [
             helpers.FFMPEG_BIN,
-            "-y", # Overwrite
+            "-y",  # Overwrite
             "-f", "rawvideo",
             "-vcodec", "rawvideo",
             "-s", "{}x{}".format(self.width, self.height),
             "-pix_fmt", "rgba",
             "-r", str(fps),
-            "-i", "-", # From pipe
-            "-an", # No audio
+            "-i", "-",  # From pipe
+            "-an",  # No audio
             "-vcodec", "libx264",
             "-pix_fmt", "yuv420p",
             "-crf", "17",
@@ -83,17 +84,18 @@ class Camera(object):
                 for frame in reversed(self.frames):
                     pipe.stdin.write(frame.tostring())
         except IOError:
-            print pipe.communicate()[1]
+            print(pipe.communicate()[1])
             raise IOError()
         pipe.stdin.close()
         if pipe.stderr is not None:
             pipe.stderr.close()
         pipe.wait()
-        print "Renaming temporary file"
+        print("Renaming temporary file")
         shutil.move(tempfile, absfile)
-        print "Saved to '{}' successfully".format(filename)
+        print(f"Saved to '{filename}' successfully")
 
-class TkCamera(Tkinter.Tk):
+
+class TkCamera(tkinter.Tk):
     """Tk window for displaying camera data"""
 
     CONFIG = {
@@ -110,14 +112,14 @@ class TkCamera(Tkinter.Tk):
         helpers.handle_config(self, kwargs, dict(camera=camera,
                                                  height=camera.height,
                                                  width=camera.width))
-        Tkinter.Tk.__init__(self)
+        tkinter.Tk.__init__(self)
         # Setup Tk
         w, h, p = self.width, self.height, self.padding
         self.geometry("{}x{}".format(w + 2 * p, h + 2 * p))
         self.resizable(0, 0)
         self.bind("<Key>", self.cb_key)
         # Create canvas object
-        self.canvas = Tkinter.Canvas(self, width=w, height=h, bg="black")
+        self.canvas = tkinter.Canvas(self, width=w, height=h, bg="black")
         self.canvas.pack()
         # Display the first frame
         if self.camera.frames:
@@ -170,7 +172,7 @@ class TkCamera(Tkinter.Tk):
                     self.frame = (2 * len(self.camera.frames)
                                   - (self.frame + self.frame_speed) - 1)
                     self.frame_speed *= -1
-                else: # once
+                else:  # once
                     self.frame = len(self.camera.frames) - 1
                     self.frame_speed = 0
             elif self.frame_speed < 0 and self.frame + self.frame_speed < 0:
@@ -180,7 +182,7 @@ class TkCamera(Tkinter.Tk):
                 elif self.camera.loop_behavior == "reverse":
                     self.frame = -(self.frame + self.frame_speed)
                     self.frame_speed *= -1
-                else: # once
+                else:  # once
                     self.frame = 0
                     self.frame_speed = 0
             else:

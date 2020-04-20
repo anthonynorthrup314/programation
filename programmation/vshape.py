@@ -2,8 +2,9 @@ import numpy
 
 import aggdraw
 
-import helpers
-import shape
+import programmation.helpers as helpers
+import programmation.shape as shape
+
 
 class VShape(shape.Shape):
     """A shape that consists only of bezier curve paths"""
@@ -25,7 +26,7 @@ class VShape(shape.Shape):
         path = "M {} {}".format(*self.points[0, 0:2])
         # Convert to:
         # [[H00, H10, A1], [H01, H11, A2], ..., [H0n-1, H1n-1, An]]
-        num_triplets = (len(self.points) - 1)/3
+        num_triplets = int((len(self.points) - 1) / 3)
         triplets = self.points[1:].reshape(num_triplets, 3, self.dim)
         for triplet in triplets:
             # Take only the (x,y) coordinates from each point
@@ -47,8 +48,8 @@ class VShape(shape.Shape):
         assert len(anchors) == len(handles0) + 1, "# Points = # Handles + 1"
         num_points = len(handles0) * 3
         self.points = numpy.insert(numpy.stack([handles0, handles1,
-                                                anchors[1:]], axis=1)\
-            .reshape(num_points, self.dim), 0, anchors[0], axis=0)
+                                                anchors[1:]], axis=1)
+                                   .reshape(num_points, self.dim), 0, anchors[0], axis=0)
 
     def get_points(self):
         """Split back into (anchors, handles0, handles1)"""
@@ -111,7 +112,7 @@ class VShape(shape.Shape):
     def count_anchors(self):
         if not self.points.any():
             return 0
-        return (len(self.points) - 1) / 3 + 1
+        return int((len(self.points) - 1) / 3) + 1
 
     ## Transform Methods ##
 

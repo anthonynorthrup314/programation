@@ -3,9 +3,11 @@ from copy import deepcopy
 from colour import Color
 
 import aggdraw
+import functools
 
-import helpers
-import transform
+import programmation.helpers as helpers
+import programmation.transform as transform
+
 
 class Shape(object):
     """Defines default values for other shapes"""
@@ -67,8 +69,8 @@ class Shape(object):
         for child in self.children:
             self.validate_child(child)
         # Remove duplicates
-        self.children = reduce(lambda r, e: (r + [e]) if e not in r else r,
-                               self.children, [])
+        self.children = functools.reduce(lambda r, e: (r + [e]) if e not in r else r,
+                                         self.children, [])
 
     def add(self, *children):
         """Validate and add new children uniquely"""

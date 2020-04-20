@@ -2,7 +2,8 @@ from copy import deepcopy
 
 import numpy
 
-import helpers
+import programmation.helpers as helpers
+
 
 class Transform(object):
     """Affine transform
